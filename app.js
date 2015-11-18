@@ -10,10 +10,10 @@ var taID = process.env.SLACK_USER_ID;
 
 var bot = new slackbot(botKey);
 
-var dianabot = require('./core-bot-functions')(bot, taID);
+var mugatubot = require('./core-bot-functions')(bot, taID);
 var easterEggs = require('./easter-eggs')(bot, taID);
 
-bot.use(dianabot);
+bot.use(mugatubot);
 
 for (var key in easterEggs) {
 	bot.use(easterEggs[key]);

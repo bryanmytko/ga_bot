@@ -66,7 +66,7 @@ module.exports = function(bot, taID) {
 				backup(queue);
 			}
 		} else if(message.type === "hello") {
-			console.log("dianabot connected...");
+			console.log("Mugatu-Bot connected... NOW GET ME A DAMN LATTE...");
 		}
 		cb(null, 'core-bot');
 	};
