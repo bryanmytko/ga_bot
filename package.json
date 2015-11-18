@@ -4,7 +4,8 @@
   "description": "A slackbot for queueing students for help during TA hours, using the [slackbot NPM](https://github.com/rmcdaniel/node-slackbot) by [Richard McDaniel](https://github.com/rmcdaniel)",
   "main": "app.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node app.js"
   },
   "author": "Max Peterson / Bobby King",
   "license": "ISC",
