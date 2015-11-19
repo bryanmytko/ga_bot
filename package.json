@@ -27,5 +27,6 @@
   "bugs": {
     "url": "https://github.com/gittheking/dianabot/issues"
   },
-  "homepage": "https://github.com/gittheking/dianabot#readme"
+  "homepage": "https://github.com/gittheking/dianabot#readme",
+  "devDependencies": {}
 }

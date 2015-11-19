@@ -20,7 +20,7 @@ var prettyQueue = function() {
 	return "Current queue is now: " + (queueArray.length ? queueArray.join(", ") : "empty");
 };
 module.exports = function(bot, taID) {
-	var dianabot = function(message, cb) {
+	var mugatubot = function(message, cb) {
 		// the if/else if statements are for commands that don't rely
 		// on the wording as much
 		if (message.type === "message" && message.text !== undefined && message.text.indexOf(bot.mention) > -1) {
@@ -70,5 +70,5 @@ module.exports = function(bot, taID) {
 		}
 		cb(null, 'core-bot');
 	};
-	return dianabot;
+	return mugatubot;
 };

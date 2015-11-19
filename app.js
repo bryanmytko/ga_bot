@@ -3,21 +3,26 @@ var slackbot = require('./slackbot-new');
 var xml2js = require('xml2js');
 var fs = require('fs');
 
-var xmlParser = new xml2js.Parser();
+var http = require('http').createServer(function(req,res){
 
-var botKey = process.env.SLACK_BOT_KEY;
-var taID = process.env.SLACK_USER_ID;
+	var xmlParser = new xml2js.Parser();
 
-var bot = new slackbot(botKey);
+	var botKey = process.env.SLACK_BOT_KEY;
+	var taID = process.env.SLACK_USER_ID;
 
-var mugatubot = require('./core-bot-functions')(bot, taID);
-var easterEggs = require('./easter-eggs')(bot, taID);
+	var bot = new slackbot(botKey);
 
-bot.use(mugatubot);
+	var mugatubot = require('./core-bot-functions')(bot, taID);
+	var easterEggs = require('./easter-eggs')(bot, taID);
 
-for (var key in easterEggs) {
-	bot.use(easterEggs[key]);
-}
+	bot.use(mugatubot);
 
-bot.connect();
+	for (var key in easterEggs) {
+		bot.use(easterEggs[key]);
+	}
+
+	bot.connect();
+
+}).listen(process.env.PORT || 8000);
+
 
