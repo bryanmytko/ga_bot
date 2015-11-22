@@ -29,7 +29,8 @@ var prettyQueue = function() {
 		+ "#Current Queue" 
 		+ "| Students |\n"
 		+ "| -------- |\n"
-		+ (queueArray.length ? queueArray.join("\n") : "| _empty_ |");
+		+ (queueArray.length ? queueArray.join("\n") : "| _empty_ |")
+		+ "```";
 };
 
 
