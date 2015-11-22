@@ -1,5 +1,5 @@
 var fs = require('fs');
-var quotes = require('./mugatu-quotes');
+//var quotes = require('./mugatu-quotes');
 
 var queue;
 
