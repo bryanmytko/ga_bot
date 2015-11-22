@@ -1,12 +1,19 @@
+// Declaring Modules and variables used in file
 var fs = require('fs');
 //var quotes = require('./mugatu-quotes');
-
 var queue;
 
+/* Method to write queue in JSON to db.json file
+** @params: array
+** @return: null
+*/
 function backup(queueArray) {
 	fs.writeFile('./db.json', JSON.stringify({queue: queueArray}));
 }
 
+
+/* Try/Catch block to make sure queue is present and formatted correctly 
+*/
 try {
 	queue = JSON.parse(fs.readFileSync('./db.json', 'utf8')).queue;
 } catch(e) {
@@ -14,23 +21,20 @@ try {
 	backup(queue);
 }
 
-/* Function to return a formatted Markdown string of the Help Queue
-** @params: none
+/* Function to return a formatted string of the Help Queue
+** @params: null
 ** @return: String
 */
 var prettyQueue = function() {
 	
-	//Pulling Slack user's real names instead of Slack screen names
+	// Pulling Slack user's real names instead of Slack screen names
 	var queueArray = queue.map(function(user) {
-		return "|" + user.real_name + "|";
+		return (queue.indexOf(user) + 1) + ") " + user.real_name ;
 	});
-
-	return "```"
-		+ "#Current Queue" 
-		+ "| Students |\n"
-		+ "| -------- |\n"
-		+ (queueArray.length ? queueArray.join("\n") : "| _empty_ |")
-		+ "```";
+	
+	// Returning formatted string of queue
+	return "*Current Queue*\n" 
+		+ (queueArray.length ? queueArray.join("\n") : "*_empty_*");
 };
 
 
@@ -51,7 +55,7 @@ module.exports = function(bot, taID) {
 						backup(queue);
 					});
 				} else {
-					bot.sendMessage(message.channel, "Already in queue. " + prettyQueue());
+					bot.sendMessage(message.channel, "Already in queue. \n " + prettyQueue());
 				}
 
 			} else if (message.text.indexOf("remove me") > -1) {
@@ -59,7 +63,7 @@ module.exports = function(bot, taID) {
 				var userToRemove = queue.filter(function(user) {return user.id === message.user});
 				if (userToRemove.length) {
 					queue.splice(queue.indexOf(userToRemove[0]), 1);
-					bot.sendMessage(message.channel, ":wave: " + prettyQueue());
+					bot.sendMessage(message.channel, ":wave: \n" + prettyQueue());
 					backup(queue);
 				}
 
@@ -67,7 +71,7 @@ module.exports = function(bot, taID) {
 				// next student
 				var currentStudent = queue.shift();
 				if (currentStudent) {
-					bot.sendMessage(message.channel, "Up now: <@" + currentStudent.id + "> -- " + prettyQueue());
+					bot.sendMessage(message.channel, "Up now: <@" + currentStudent.id + "> -- \n " + prettyQueue());
 					backup(queue);
 				}
 
