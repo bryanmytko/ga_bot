@@ -1,4 +1,5 @@
 var fs = require('fs');
+var quotes = require('./mugatu-quotes');
 
 var queue;
 
@@ -13,12 +14,25 @@ try {
 	backup(queue);
 }
 
+/* Function to return a formatted Markdown string of the Help Queue
+** @params: none
+** @return: String
+*/
 var prettyQueue = function() {
+	
+	//Pulling Slack user's real names instead of Slack screen names
 	var queueArray = queue.map(function(user) {
-		return user.real_name;
+		return "|" + user.real_name + "|";
 	});
-	return "Current queue is now: " + (queueArray.length ? queueArray.join(", ") : "empty");
+
+	return "```"
+		+ "#Current Queue" 
+		+ "| Students |\n"
+		+ "| -------- |\n"
+		+ (queueArray.length ? queueArray.join("\n") : "| _empty_ |");
 };
+
+
 module.exports = function(bot, taID) {
 	var mugatubot = function(message, cb) {
 		// the if/else if statements are for commands that don't rely
