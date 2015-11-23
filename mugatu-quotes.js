@@ -10,7 +10,7 @@ var quotes = {
 		["They're break dance fighting..."],
 		["As a catepillar becomes a butterfly, so must you become Derelicte!"],
 	],
-	'busy': ["","... So hot right now... ",""]
+	'busy': ["That ","... So hot right now... ",""]
 };
 
 module.exports = quotes;

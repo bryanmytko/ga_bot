@@ -1,6 +1,6 @@
 // Declaring Modules and variables used in file
 var fs = require('fs');
-//var quotes = require('./mugatu-quotes');
+var quotes = require('./mugatu-quotes');
 var queue;
 
 /* Method to write queue in JSON to db.json file
@@ -51,6 +51,9 @@ module.exports = function(bot, taID) {
 				if (queue.filter(function(e) {return e.id === message.user}).length === 0) {
 					bot.api("users.info", {user: message.user}, function(data) {
 						queue.push(data.user);
+						if(queue.length > 5){
+							bot.sendMessage(message.channel, quotes['busy'].join( "<@"+taID+">" ) + "\n" + prettyQueue()); 
+						}
 						bot.sendMessage(message.channel, prettyQueue());
 						backup(queue);
 					});

@@ -7,7 +7,7 @@ var xmlParser = new xml2js.Parser();
 
 //var botKey = process.env.SLACK_BOT_KEY;
 var botKey = envVars['slackbot'];
-var taID = process.env.SLACK_USER_ID;
+var taID = envVars['taID'];
 
 var bot = new slackbot(botKey);
 
