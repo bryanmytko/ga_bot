@@ -51,10 +51,13 @@ module.exports = function(bot, taID) {
 				if (queue.filter(function(e) {return e.id === message.user}).length === 0) {
 					bot.api("users.info", {user: message.user}, function(data) {
 						queue.push(data.user);
-						if(queue.length > 5){
+						
+						// Posts a Mugatu quote if the queue grows to larger than 5
+						if( queue.length > 5 ){
 							bot.sendMessage(message.channel, quotes['busy'].join( "<@"+taID+">" ) + "\n" + prettyQueue()); 
+						} else {
+							bot.sendMessage(message.channel, prettyQueue());
 						}
-						bot.sendMessage(message.channel, prettyQueue());
 						backup(queue);
 					});
 				} else {
