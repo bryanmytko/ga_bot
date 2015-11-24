@@ -53,10 +53,19 @@ module.exports = function(bot, taID) {
 						queue.push(data.user);
 						
 						// Posts a Mugatu quote if the queue grows to larger than 5
-						if( queue.length > 5 ){
+						if( queue.length > 6 ){
 							bot.sendMessage(message.channel, quotes['busy'].join( "<@"+taID+">" ) + "\n" + prettyQueue()); 
 						} else {
-							bot.sendMessage(message.channel, prettyQueue());
+							//var quote = quotes['default'][0];
+							var quote = quotes['default'][Math.floor(Math.random()*quotes['default'].length)];
+							//console.log(quote);
+							if( quote.length > 1 ){
+								//console.log('DID IT');
+								//console.log(message);
+								quote[0] = quote.join('<@'+message.user+'>');
+								console.log('quote after join:',quote);
+							}
+							bot.sendMessage(message.channel, quote[0] + '\n' +  prettyQueue());
 						}
 						backup(queue);
 					});
