@@ -2,13 +2,23 @@
 var fs = require('fs');
 var quotes = require('./mugatu-quotes');
 var queue;
+var present;
+var secret;
 
 /* Method to write queue in JSON to db.json file
 ** @params: array
-** @return: null
+** @return: void
 */
 function backup(queueArray) {
 	fs.writeFile('./db.json', JSON.stringify({queue: queueArray}));
+}
+
+/* Method to write attendance record in attendance.json file along with the secret word
+** @params: array
+** @return: void
+*/
+function backupAttendance(presentArray,secretWord){
+	fs.writeFile('./attendance-db.json',JSON.stringify({present: presentArray,secret: secretWord}));
 }
 
 
@@ -19,6 +29,16 @@ try {
 } catch(e) {
 	queue = [];
 	backup(queue);
+}
+
+/* Try/Catch block to make sure attendance array is present and formatted correctly
+*/
+try {
+	present = JSON.parse(fs.readFileSync('./attendance-db.json','utf8')).present;
+} catch(e) {
+	present = [];
+	secret = "";
+	backupAttendance(present,secret);
 }
 
 /* Function to return a formatted string of the Help Queue
@@ -38,7 +58,16 @@ var prettyQueue = function() {
 };
 
 
-module.exports = function(bot, taID) {
+var prettyAttendance = function(){
+	var presentArray = present.map(function(user){
+		return "- " + user.real_name;
+	});
+	return "*Attendance*\n"
+		+ (presentArray.length ? presentArray.join("\n") : "*_Really?! No one is here today?!_*");
+}
+
+
+module.exports = function(bot, taID, adminID) {
 	var mugatubot = function(message, cb) {
 		// the if/else if statements are for commands that don't rely
 		// on the wording as much
@@ -51,7 +80,7 @@ module.exports = function(bot, taID) {
 				if (queue.filter(function(e) {return e.id === message.user}).length === 0) {
 					bot.api("users.info", {user: message.user}, function(data) {
 						queue.push(data.user);
-						
+						console.log("admin: ",adminID);
 						// Posts a Mugatu quote if the queue grows to larger than 5
 						if( queue.length > 6 ){
 							bot.sendMessage(message.channel, quotes['busy'].join( "<@"+taID+">" ) + "\n" + prettyQueue()); 
@@ -98,6 +127,16 @@ module.exports = function(bot, taID) {
 				queue = [];
 				bot.sendMessage(message.channel, "Queue cleared");
 				backup(queue);
+			} else if (message.text.indexOf("attendance") && message.user === adminID){
+				console.log(present);
+				bot.sendMessage(message.channel, prettyAttendance());
+			} else if (message.text.indexOf("secret") && message.user === adminID){
+				secret = message.text.split(" ")[1];
+				backupAtttendance(present,secret);
+				bot.sendMessage(message.channel, "Secret word has been set to " + secret);
+			} else if (message.text.indexOf(secret)){
+				present.push(data.user);
+				backupAttendance(present,secret);
 			}
 		} else if(message.type === "hello") {
 			console.log("Mugatu-Bot connected... NOW GET ME A DAMN LATTE...");

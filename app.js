@@ -8,10 +8,11 @@ var xmlParser = new xml2js.Parser();
 //var botKey = process.env.SLACK_BOT_KEY;
 var botKey = envVars['slackbot'];
 var taID = envVars['taID'];
+var adminID = envVars['adminID'];
 
 var bot = new slackbot(botKey);
 
-var mugatubot = require('./core-bot-functions')(bot, taID);
+var mugatubot = require('./core-bot-functions')(bot, taID, adminID);
 var easterEggs = require('./easter-eggs')(bot, taID);
 
 bot.use(mugatubot);
