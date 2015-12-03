@@ -1,2 +1,7 @@
 env-vars.js
 
+*.swp
+*.swo
+
+.DS_STORE
+
