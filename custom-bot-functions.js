@@ -41,22 +41,6 @@ try {
   backupAttendance(present,secret);
 }
 
-/* Function to return a formatted string of the Help Queue
-** @params: null
-** @return: String
-*/
-var prettyQueue = function() {
-  
-  // Pulling Slack user's real names instead of Slack screen names
-  var queueArray = queue.map(function(user) {
-    return (queue.indexOf(user) + 1) + ") " + user.real_name ;
-  });
-  
-  // Returning formatted string of queue
-  return "*Current Queue*\n" 
-    + (queueArray.length ? queueArray.join("\n") : "*_empty_*");
-};
-
 
 var prettyAttendance = function(){
   var presentArray = present.map(function(user){
@@ -91,10 +75,6 @@ var prettyAttendance = function(){
       //   // help message
       //   bot.sendMessage(message.channel, "All commands work only when you specifically mention me. Type `queue me` or `q me` to queue yourself and `status` to check current queue. Type `remove me` to remove yourself.")
       //
-      // } else if (message.text.indexOf("clear queue") > -1 && message.user === taID) {
-      //   queue = [];
-      //   bot.sendMessage(message.channel, "Queue cleared");
-      //   backup(queue);
       // } else if (message.text.indexOf("attendance") && message.user === adminID){
       //   console.log(present);
       //   bot.sendMessage(message.channel, prettyAttendance());
@@ -113,13 +93,23 @@ function CustomBot(bot){
   return this;
 }
 
-CustomBot.prototype.parseMessageText = function(message){
-  text = message.text.split(/<.*>:?\s*/)[1];
+CustomBot.prototype.parseMessageText = function(){
+  text = this.message.text.split(/<.*>:?\s*/)[1];
 
   if(text !== undefined){
     return text.trim();
   }
 }
+
+CustomBot.prototype.prettyQueue = function() {
+  var queue_names = queue.map(function(el) {
+    var name = el.real_name || el.name
+    return (queue.indexOf(el) + 1) + ") " + name;
+  });
+
+  return "\n*Current Queue*\n"
+    + (queue_names.length ? queue_names.join("\n") : "*_empty_*");
+};
 
 CustomBot.prototype.randomQuote = function(){
   var quotes = bot_flavor["quotes"] || ["Hello!", ":D"];
@@ -129,49 +119,56 @@ CustomBot.prototype.randomQuote = function(){
 };
 
 CustomBot.prototype.addToQueue = function(){
-  var random_quote = this.randomQuote();
+  var user = this.message.user;
 
-  this.bot.sendMessage(
-    this.channel,
-    `I should queue you, ${this.full_name}, but that functionality is broken.\n ${random_quote}`
-  );
-  // WUT.
-  // if (queue.filter(function(e) {return e.id === message.user}).length === 0) {
-  //   bot.api("users.info", {user: message.user}, function(data) {
-  //     queue.push(data.user);
-  //     console.log("admin: ",adminID);
-  //     // Posts a Mugatu quote if the queue grows to larger than 5
-  //     if( queue.length > 6 ){
-  //       bot.sendMessage(message.channel, quotes['busy'].join( "<@"+taID+">" ) + "\n" + prettyQueue()); 
-  //     } else {
-  //       //var quote = quotes['default'][0];
-  //       //console.log(quote);
-  //       if( quote.length > 1 ){
-  //         //console.log('DID IT');
-  //         //console.log(message);
-  //         quote[0] = quote.join('<@'+message.user+'>');
-  //         console.log('quote after join:',quote);
-  //       }
-  //       bot.sendMessage(message.channel, quote[0] + '\n' +  prettyQueue());
-  //     }
-  //     backup(queue);
-  //   });
-  // } else {
-  //   bot.sendMessage(message.channel, "Already in queue. \n " + prettyQueue());
-  // }
-}
+  if(queue.some(function(el){ return el.id === user })){
+    var queue_message = bot_flavor.queue || "Already in queue.";
 
-CustomBot.prototype.greet = function(message){
+    this.bot.sendMessage(
+      this.message.channel,
+      `${queue_message}\n ${this.prettyQueue()}`
+    );
+  } else {
+    var random_quote = this.randomQuote();
+
+    var bot_api_call = new Promise(
+      this.bot.api(
+        "users.info",
+        { user: this.message.user },
+        function(data) {
+          queue.push(data.user);
+          backup(queue);
+        }
+      );
+    );
+
+    this.bot.sendMessage(
+      this.message.channel,
+      `${random_quote}\n ${this.prettyQueue()}`
+    );
+  }
+};
+
+CustomBot.prototype.clearQueue = function(){
+  //@TODO ONLY if TA / Admin
+  var response = bot_flavor.cleared || "Queue cleared";
+  queue = [];
+  this.bot.sendMessage(this.message.channel, response);
+  backup(queue);
+};
+
+CustomBot.prototype.greet = function(){
   const greeting = bot_flavor.greeting || "Hello. Bot is online!";
   console.log(greeting);
 };
 
 CustomBot.prototype.respond = function(message){
+  this.message = message;
   this.channel = message.channel;
   this.user = message.user;
   this.full_name = `<@${this.user}>`;
 
-  text = this.parseMessageText(message);
+  text = this.parseMessageText();
 
   switch(text){
     case "hello":
@@ -190,6 +187,9 @@ CustomBot.prototype.respond = function(message){
     case "q me": // fall-through
     case "queue me":
       this.addToQueue();
+      break;
+    case "clear queue":
+      this.clearQueue();
       break;
   }
 };
