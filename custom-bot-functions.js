@@ -109,23 +109,22 @@ var prettyAttendance = function(){
 
 
 function CustomBot(bot){
-  console.log('instantiating bot...');
-
   this.bot = bot;
-  this.parse_message_text = function(message){
-    text = message.text.split(":")[1] // @TODO sometimes it can happen w/o colon
-
-    if(text !== undefined){
-      return text.trim();
-    }
-  }
-
   return this;
+}
+
+CustomBot.prototype.parseMessageText = function(message){
+  text = message.text.split(/<.*>:?\s*/)[1];
+
+  if(text !== undefined){
+    return text.trim();
+  }
 }
 
 CustomBot.prototype.randomQuote = function(){
   var quotes = bot_flavor["quotes"] || ["Hello!", ":D"];
   var quote = quotes[Math.floor(Math.random()*quotes.length)];
+
   return quote.replace(/<user>/g, this.full_name);
 };
 
@@ -172,7 +171,7 @@ CustomBot.prototype.respond = function(message){
   this.user = message.user;
   this.full_name = `<@${this.user}>`;
 
-  text = this.parse_message_text(message);
+  text = this.parseMessageText(message);
 
   switch(text){
     case "hello":
