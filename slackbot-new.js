@@ -51,7 +51,7 @@ slackbot.prototype.api = function(method, params, cb) {
       }
     });
   });
-  
+
   req.on('error', function(error) {
     if (cb != null) {
       return cb({
