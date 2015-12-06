@@ -1,29 +1,22 @@
-// Declaring Modules and variables used in file
 var fs = require('fs');
 var bot_flavor = require('./bot_flavor');
 var queue;
 var present;
-var secret;
+// @TODO should pull db value if set. This will break expected behavior on D/C
+var secret = Math.random().toString(36).substring(7);
 
-/* Method to write queue in JSON to db.json file
-** @params: array
-** @return: void
-*/
+/*******************************************
+/* Old Code, needs to migrate into CustomBot
+*******************************************/
+
 function backup(queueArray) {
   fs.writeFile('./db.json', JSON.stringify({queue: queueArray}));
 }
 
-/* Method to write attendance record in attendance.json file along with the secret word
-** @params: array
-** @return: void
-*/
 function backupAttendance(presentArray,secretWord){
   fs.writeFile('./attendance-db.json',JSON.stringify({present: presentArray,secret: secretWord}));
 }
 
-
-/* Try/Catch block to make sure queue is present and formatted correctly
-*/
 try {
   queue = JSON.parse(fs.readFileSync('./db.json', 'utf8')).queue;
 } catch(e) {
@@ -31,8 +24,6 @@ try {
   backup(queue);
 }
 
-/* Try/Catch block to make sure attendance array is present and formatted correctly
-*/
 try {
   present = JSON.parse(fs.readFileSync('./attendance-db.json','utf8')).present;
 } catch(e) {
@@ -41,52 +32,9 @@ try {
   backupAttendance(present,secret);
 }
 
-
-var prettyAttendance = function(){
-  var presentArray = present.map(function(user){
-    return "- " + user.real_name;
-  });
-  return "*Attendance*\n"
-    + (presentArray.length ? presentArray.join("\n") : "*_Really?! No one is here today?!_*");
-}
-
 /********************************
-/* Old code still not refactored
+/* Begin CustomBot
 *********************************/
-      //
-      // } else if (message.text.indexOf("remove me") > -1) {
-      //   // removing a user
-      //   var userToRemove = queue.filter(function(user) {return user.id === message.user});
-      //   if (userToRemove.length) {
-      //     queue.splice(queue.indexOf(userToRemove[0]), 1);
-      //     bot.sendMessage(message.channel, ":wave: \n" + prettyQueue());
-      //     backup(queue);
-      //   }
-      //
-      // } else if (message.text.indexOf("next") > -1 && message.user === taID) {
-      //   // next student
-      //   var currentStudent = queue.shift();
-      //   if (currentStudent) {
-      //     bot.sendMessage(message.channel, "Up now: <@" + currentStudent.id + "> -- \n " + prettyQueue());
-      //     backup(queue);
-      //   }
-      //
-      // } else if (message.text.indexOf("help") > -1) {
-      //   // help message
-      //   bot.sendMessage(message.channel, "All commands work only when you specifically mention me. Type `queue me` or `q me` to queue yourself and `status` to check current queue. Type `remove me` to remove yourself.")
-      //
-      // } else if (message.text.indexOf("attendance") && message.user === adminID){
-      //   console.log(present);
-      //   bot.sendMessage(message.channel, prettyAttendance());
-      // } else if (message.text.indexOf("secret") && message.user === adminID){
-      //   secret = message.text.split(" ")[1];
-      //   backupAtttendance(present,secret);
-      //   bot.sendMessage(message.channel, "Secret word has been set to " + secret);
-      // } else if (message.text.indexOf(secret)){
-      //   present.push(data.user);
-      //   backupAttendance(present,secret);
-      // }
-
 
 function CustomBot(bot){
   this.bot = bot;
@@ -101,7 +49,7 @@ CustomBot.prototype.parseMessageText = function(){
   }
 }
 
-CustomBot.prototype.prettyQueue = function() {
+CustomBot.prototype.prettyQueue = function(){
   var queue_names = queue.map(function(el) {
     var name = el.real_name || el.name
     return (queue.indexOf(el) + 1) + ") " + name;
@@ -111,6 +59,18 @@ CustomBot.prototype.prettyQueue = function() {
     + (queue_names.length ? queue_names.join("\n") : "*_empty_*");
 };
 
+CustomBot.prototype.prettyAttendance = function(){
+  var attendance_zero =
+    bot_flavor.attendance_zero || "*_Really?! No one is here today?!_*";
+
+  var presentArray = present.map(function(user){
+    return "- " + user.real_name;
+  });
+
+  return "*Attendance*\n"
+    + (presentArray.length ? presentArray.join("\n") : attendance_zero);
+};
+
 CustomBot.prototype.randomQuote = function(){
   var quotes = bot_flavor["quotes"] || ["Hello!", ":D"];
   var quote = quotes[Math.floor(Math.random()*quotes.length)];
@@ -118,39 +78,37 @@ CustomBot.prototype.randomQuote = function(){
   return quote.replace(/<user>/g, this.full_name);
 };
 
+CustomBot.prototype.sendQueueMessage = function(msg){
+  this.bot.sendMessage(
+    this.message.channel,
+    `${msg}\n ${this.prettyQueue()}`
+  );
+};
+
 CustomBot.prototype.addToQueue = function(){
   var user = this.message.user;
 
   if(queue.some(function(el){ return el.id === user })){
     var queue_message = bot_flavor.queue || "Already in queue.";
-
-    this.bot.sendMessage(
-      this.message.channel,
-      `${queue_message}\n ${this.prettyQueue()}`
-    );
+    this.sendQueueMessage(queue_message);
   } else {
     var random_quote = this.randomQuote();
+    var self = this;
 
-    var bot_api_call = new Promise(
-      this.bot.api(
-        "users.info",
-        { user: this.message.user },
-        function(data) {
-          queue.push(data.user);
-          backup(queue);
-        }
-      );
-    );
-
-    this.bot.sendMessage(
-      this.message.channel,
-      `${random_quote}\n ${this.prettyQueue()}`
+    this.bot.api(
+      "users.info",
+      { user: this.message.user },
+      function(data) {
+        queue.push(data.user);
+        backup(queue);
+        self.sendQueueMessage(random_quote);
+      }
     );
   }
 };
 
 CustomBot.prototype.clearQueue = function(){
-  //@TODO ONLY if TA / Admin
+  // @TODO PERMISSION LEVEL: TA
   var response = bot_flavor.cleared || "Queue cleared";
   queue = [];
   this.bot.sendMessage(this.message.channel, response);
@@ -162,6 +120,84 @@ CustomBot.prototype.greet = function(){
   console.log(greeting);
 };
 
+CustomBot.prototype.removeMe = function(){
+  var self = this;
+
+  var userToRemove = queue.filter(
+    function(user) {
+      return user.id === self.user;
+    }
+  );
+
+  if (userToRemove.length) {
+    queue.splice(queue.indexOf(userToRemove[0]), 1);
+    this.bot.sendMessage(
+      this.channel,
+      (bot_flavor.remove || ":wave:") + "\n" + this.prettyQueue()
+    );
+    backup(queue);
+  }
+};
+
+CustomBot.prototype.next = function(){
+  // @TODO PERMISSION LEVEL: TA
+  var currentStudent = queue.shift();
+
+  if(currentStudent){
+    this.bot.sendMessage(
+      this.channel,
+      "Up now: <@" + currentStudent.id + ">! \n " + this.prettyQueue()
+    );
+
+    backup(queue);
+  } else {
+    this.bot.sendMessage(
+      this.channel,
+      bot_flavor.empty_queue || "The queue is empty."
+    );
+  }
+};
+
+CustomBot.prototype.help = function(){
+  this.bot.sendMessage(
+    this.message.channel,
+    "All commands work only when you specifically mention me. " +
+    "Type `queue me` or `q me` to queue yourself and `status` to check " +
+    "current queue. Type `remove me` to remove yourself."
+  );
+};
+
+CustomBot.prototype.attendance = function(){
+  // @TODO PERMISSION LEVEL: ADMIN
+  console.log(present);
+  this.bot.sendMessage(this.channel, this.prettyAttendance());
+};
+
+CustomBot.prototype.setSecret = function(){
+  // @TODO PERMISSION LEVEL: ADMIN
+  capture = /set secret\s*(\S*).*/.exec(text);
+  secret = capture[1];
+  backupAttendance(present, secret);
+
+  this.bot.sendMessage(
+    this.user,
+    (bot_flavor.secret_set || "Secret word has been set to ") + secret
+  );
+};
+
+CustomBot.prototype.addToAttendance = function(){
+  if(present.indexOf(this.user) == -1){
+    // @TODO Use API to fetch user object, prettyAttendance expects this
+    // Move this to callback
+    present.push(this.user);
+    backupAttendance(present, secret);
+    this.bot.sendMessage(
+      this.user,
+      bot_flavor.present || "You've been marked as present!"
+    );
+  }
+};
+
 CustomBot.prototype.respond = function(message){
   this.message = message;
   this.channel = message.channel;
@@ -169,6 +205,8 @@ CustomBot.prototype.respond = function(message){
   this.full_name = `<@${this.user}>`;
 
   text = this.parseMessageText();
+
+  console.log(secret);
 
   switch(text){
     case "hello":
@@ -184,18 +222,37 @@ CustomBot.prototype.respond = function(message){
         this.channel, "Your id is: " + this.user
       );
       break;
-    case "q me": // fall-through
+    case "q me":
     case "queue me":
       this.addToQueue();
+      break;
+    case "remove":
+    case "remove me":
+      this.removeMe();
       break;
     case "clear queue":
       this.clearQueue();
       break;
+    case "next":
+      this.next();
+      break;
+    case "help":
+      this.help();
+      break;
+    case "attendance":
+      this.attendance();
+      break;
+    case secret:
+      this.addToAttendance();
+      break;
+    default:
+      if(/set secret\s*.*/.test(text)) this.setSecret();
   }
 };
 
 /* @TODO Make this more clear:
  * Why returning a function that returns function?
+ * Should just be able to export cbf() ?
  */
 module.exports = function(bot, taID, adminID) {
   const custom_bot = new CustomBot(bot);
@@ -207,5 +264,3 @@ module.exports = function(bot, taID, adminID) {
 
   return custom_bot_functions;
 };
-
-// cb(null, 'core-bot'); what is this for?
