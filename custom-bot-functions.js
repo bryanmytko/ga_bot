@@ -1,45 +1,39 @@
-var fs = require('fs');
-var bot_flavor = require('./bot_flavor');
-var queue;
-var present;
-// @TODO should pull db value if set. This will break expected behavior on D/C
-var secret = Math.random().toString(36).substring(7);
+var fs = require('fs'),
+    bot_flavor = require('./bot_flavor');
 
-/*******************************************
-/* Old Code, needs to migrate into CustomBot
-*******************************************/
+var present =
+  JSON.parse(fs.readFileSync("./attendance-db.json","utf8")).present;
+var secret =
+  JSON.parse(fs.readFileSync("./db.json", "utf8")).secret;
+var queue =
+  JSON.parse(fs.readFileSync("./db.json", "utf8")).queue;
 
-function backup(queueArray) {
-  fs.writeFile('./db.json', JSON.stringify({queue: queueArray}));
-}
-
-function backupAttendance(presentArray,secretWord){
-  fs.writeFile('./attendance-db.json',JSON.stringify({present: presentArray,secret: secretWord}));
-}
-
-try {
-  queue = JSON.parse(fs.readFileSync('./db.json', 'utf8')).queue;
-} catch(e) {
-  queue = [];
-  backup(queue);
-}
-
-try {
-  present = JSON.parse(fs.readFileSync('./attendance-db.json','utf8')).present;
-} catch(e) {
-  present = [];
-  secret = "";
-  backupAttendance(present,secret);
-}
-
-/********************************
-/* Begin CustomBot
-*********************************/
-
-function CustomBot(bot){
+function CustomBot(bot, ta_id, admin_id){
   this.bot = bot;
+  this.ta_id = ta_id;
+  this.admin_id = admin_id;
+
   return this;
 }
+
+CustomBot.prototype.backup = function(queue_array) {
+  fs.writeFile(
+    "./db.json",
+    JSON.stringify({
+      queue: queue_array
+    })
+  );
+};
+
+CustomBot.prototype.backupAttendance = function(present_array, secret){
+  fs.writeFile(
+    "./attendance_db.json",
+    JSON.stringify({
+      present: present_array,
+      secret: secret
+    })
+  );
+};
 
 CustomBot.prototype.parseMessageText = function(){
   text = this.message.text.split(/<.*>:?\s*/)[1];
@@ -47,11 +41,12 @@ CustomBot.prototype.parseMessageText = function(){
   if(text !== undefined){
     return text.trim();
   }
-}
+};
 
 CustomBot.prototype.prettyQueue = function(){
   var queue_names = queue.map(function(el) {
     var name = el.real_name || el.name
+    console.log(queue);
     return (queue.indexOf(el) + 1) + ") " + name;
   });
 
@@ -100,7 +95,7 @@ CustomBot.prototype.addToQueue = function(){
       { user: this.message.user },
       function(data) {
         queue.push(data.user);
-        backup(queue);
+        self.backup(queue);
         self.sendQueueMessage(random_quote);
       }
     );
@@ -112,7 +107,7 @@ CustomBot.prototype.clearQueue = function(){
   var response = bot_flavor.cleared || "Queue cleared";
   queue = [];
   this.bot.sendMessage(this.message.channel, response);
-  backup(queue);
+  this.backup(queue);
 };
 
 CustomBot.prototype.greet = function(){
@@ -135,7 +130,7 @@ CustomBot.prototype.removeMe = function(){
       this.channel,
       (bot_flavor.remove || ":wave:") + "\n" + this.prettyQueue()
     );
-    backup(queue);
+    this.backup(queue);
   }
 };
 
@@ -149,7 +144,7 @@ CustomBot.prototype.next = function(){
       "Up now: <@" + currentStudent.id + ">! \n " + this.prettyQueue()
     );
 
-    backup(queue);
+    this.backup(queue);
   } else {
     this.bot.sendMessage(
       this.channel,
@@ -169,7 +164,7 @@ CustomBot.prototype.help = function(){
 
 CustomBot.prototype.attendance = function(){
   // @TODO PERMISSION LEVEL: ADMIN
-  console.log(present);
+  console.log(this.present);
   this.bot.sendMessage(this.channel, this.prettyAttendance());
 };
 
@@ -177,7 +172,7 @@ CustomBot.prototype.setSecret = function(){
   // @TODO PERMISSION LEVEL: ADMIN
   capture = /set secret\s*(\S*).*/.exec(text);
   secret = capture[1];
-  backupAttendance(present, secret);
+  this.backupAttendance(this.present, secret);
 
   this.bot.sendMessage(
     this.user,
@@ -190,11 +185,21 @@ CustomBot.prototype.addToAttendance = function(){
     // @TODO Use API to fetch user object, prettyAttendance expects this
     // Move this to callback
     present.push(this.user);
-    backupAttendance(present, secret);
+    this.backupAttendance(this.present, this.secret);
     this.bot.sendMessage(
       this.user,
       bot_flavor.present || "You've been marked as present!"
     );
+  }
+};
+
+CustomBot.prototype.getAccessLevel = function(){
+  var access_level = 0;
+
+  if(this.user == this.admin_id){
+    access_level = 3;
+  } else if(this.user === this.ta_id){
+    access_level = 2;
   }
 };
 
@@ -203,19 +208,18 @@ CustomBot.prototype.respond = function(message){
   this.channel = message.channel;
   this.user = message.user;
   this.full_name = `<@${this.user}>`;
+  this.access_level = this.getAccessLevel();
 
   text = this.parseMessageText();
-
-  console.log(secret);
 
   switch(text){
     case "hello":
       this.bot.sendMessage(
-        this.channel, `Hello, ${this.full_name}`
+        this.channel, `Hello, ${this.full_name}: ${this.accessLevel()}`
       );
       break;
     case "status":
-      this.bot.sendMessage(this.channel, prettyQueue());
+      this.bot.sendMessage(this.channel, this.prettyQueue());
       break;
     case "what is my user id?":
       this.bot.sendMessage(
@@ -250,12 +254,8 @@ CustomBot.prototype.respond = function(message){
   }
 };
 
-/* @TODO Make this more clear:
- * Why returning a function that returns function?
- * Should just be able to export cbf() ?
- */
 module.exports = function(bot, taID, adminID) {
-  const custom_bot = new CustomBot(bot);
+  const custom_bot = new CustomBot(bot, taID, adminID);
 
   const custom_bot_functions = function(message, cb) {
     if(message.type === "hello") custom_bot.greet(message);
