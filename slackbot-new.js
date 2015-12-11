@@ -3,7 +3,7 @@ var async = require('async'),
     querystring = require('querystring'),
     ws = require('ws');
 
-function slackbot(token) { 
+function slackbot(token) {
     this.token = token;
     this.handlers = [];
     this.messageID = 0;
