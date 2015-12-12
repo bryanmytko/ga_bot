@@ -5,9 +5,9 @@ var fs = require('fs');
 var envVars = require('./env-vars');
 var xmlParser = new xml2js.Parser();
 
-var botKey = envVars['slackbot'];
-var taID = envVars['taID'];
-var adminID = envVars['adminID'];
+var botKey = envVars['SLACKBOT_KEY'];
+var taID = envVars['TA_ID'];
+var adminID = envVars['ADMIN_ID'];
 
 var bot = new slackbot(botKey);
 var custom_bot = require('./custom-bot-functions')(bot, taID, adminID);
