@@ -1,31 +1,63 @@
-# Dianabot
-A slackbot for queueing students for help during TA hours, using the [slackbot NPM](https://github.com/rmcdaniel/node-slackbot) by [Richard McDaniel](https://github.com/rmcdaniel)
+# GA-Bot
+A general purpose slackbot for queueing TA appointments & taking attendance
+
+Using the [slackbot NPM](https://github.com/rmcdaniel/node-slackbot)
+by [Richard McDaniel](https://github.com/rmcdaniel)
+
+Based on [dianabot](https://github.com/maxrpeterson/dianabot) by [Max R. Peterson](https://github.com/maxrpeterson)
+
+This version updated & maintained by [Bryan Mytko](https://github.com/bryanmytko)
 
 -----
-# how to run
+# Setup
 
-1. First, if you haven't created a bot user integration, create one [here](https://my.slack.com/services/new/bot) and invite the bot to whatever slack group you would like it to function in.
-2. Then, create an environmental variable `SLACK_BOT_KEY` that points to the key of the bot generated.
-3. Run `node app.js`, then just mention the bot with commands in any slack group it's a part of.
-4. In order to use commands like `next` and `clear queue`, you need to add your slack user ID as an environmental variable.
-	1. Once the bot is running and in a channel, mention the bot without any commands.
-	2. This will log the message to your terminal, giving you the user ID of whoever sent the message.
-	3. Copy your user ID and save this to an environmental variable `SLACK_USER_ID`
-	4. Restart the bot and you will now be able to use the TA commands.
+1. Create a bot on Slack [here](https://my.slack.com/services/new/bot) and invite the bot to your channel.
+1. Set the bot's key to an environment variable `SLACKBOT_KEY`
+1. Run `node app.js` to start the bot.
+1. Communicate with the bot by typing commands directly to the bot via mention or private message in Slack.
+1. There are permission levels for certain commands. These can be set with environment variables `TA_ID` and `ADMIN_ID`
+
+-------
+# Customization
+
+GA-Bot allows for custom interaction via the `bot_flavor.js` file. You can override the default messages here by adding data for the specific flavor keys:
+
+- `present` Response when a student sends the attendance secret word.
+- `already_queued` Response when you try to queue again.
+- `secret_set` Message logged to the server when the secret changes.
+- `remove` Response for leaving the queue.
+- `empty_queue` Display message for clearing the queue.
+- `attendance_cleared` Display message for clearing attendnace.
+- `quotes` An array of quotes chosen at random when a user queues.
+- `greeting` Message logged to the server when the bot has connected successfully.
 
 -------
 
 ### List of commands:
 All commands work by mentioning the bot directly, using the `@` mention system of Slack. For instance, to use the queue command, you would write: `@bot-name q me`
+- `hello` - the bot will greet you back.
 - `queue me` or `q me` - add yourself to the queue for help
-- `remove me` - remove yourself from the queue
+- `remove` or `remove me` - remove yourself from the queue
 - `status` - display the current status of/who is in the queue
+- `what is my user id?` - the bot will give you your Slack internal user id.
+- `<secret word>` - send the secret word to be marked as present for attendance.
 - `help` - displays a list of the commands available to anyone who is not the admin/TA
 
-Commands only available for the admin/TA:
+Commands only available for the TA & Admin:
 - `next` - removes the first person from the queue and sends a message to alert them that it is their turn. It also displays the new status of the queue
-- `clear queue` - clears the queue without alerting anyone
+- `clear queue` - clears the queue.
+- `attendance` - outputs the current attendance list.
+- `clear attendance` - clears the current attendance list.
 
-Also some easter eggs that may or may not be useful
+Commands only available for the Admin:
+- `set secret <secret word>` - sets the secret word for attendance.
+
+-------
+
+### Issues
+
+Currently attendance & queues are kept in local data store. Feedback would be very valuable to let the developers know if it's worthwhile to convert to using a real database.
+
+To request a feature, create an issue on the [GitHub](https://github.com/bryanmytko/ga-bot)  page
 
 For more info on bots/bot users, check out [this page](https://api.slack.com/bot-users).

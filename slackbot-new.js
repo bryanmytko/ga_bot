@@ -3,7 +3,7 @@ var async = require('async'),
     querystring = require('querystring'),
     ws = require('ws');
 
-function slackbot(token) { 
+function slackbot(token) {
     this.token = token;
     this.handlers = [];
     this.messageID = 0;
@@ -51,7 +51,7 @@ slackbot.prototype.api = function(method, params, cb) {
       }
     });
   });
-  
+
   req.on('error', function(error) {
     if (cb != null) {
       return cb({
