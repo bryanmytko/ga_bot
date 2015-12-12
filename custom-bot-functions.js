@@ -2,11 +2,11 @@ var fs = require('fs'),
     bot_flavor = require('./bot_flavor');
 
 var present =
-  JSON.parse(fs.readFileSync("./attendance-db.json","utf8")).present;
-var secret =
-  JSON.parse(fs.readFileSync("./db.json", "utf8")).secret;
-var queue =
-  JSON.parse(fs.readFileSync("./db.json", "utf8")).queue;
+      JSON.parse(fs.readFileSync("./attendance-db.json","utf8")).present,
+    secret =
+      JSON.parse(fs.readFileSync("./attendance-db.json", "utf8")).secret,
+    queue =
+      JSON.parse(fs.readFileSync("./db.json", "utf8")).queue;
 
 function CustomBot(bot, ta_id, admin_id){
   this.bot = bot;
@@ -27,7 +27,7 @@ CustomBot.prototype.backup = function(queue_array) {
 
 CustomBot.prototype.backupAttendance = function(present_array, secret){
   fs.writeFile(
-    "./attendance_db.json",
+    "./attendance-db.json",
     JSON.stringify({
       present: present_array,
       secret: secret
@@ -36,7 +36,7 @@ CustomBot.prototype.backupAttendance = function(present_array, secret){
 };
 
 CustomBot.prototype.parseMessageText = function(){
-  text = this.message.text.split(/<.*>:?\s*/)[1];
+  var text = this.message.text.split(/<.*>:?\s*/)[1];
 
   if(text !== undefined){
     return text.trim();
@@ -45,13 +45,13 @@ CustomBot.prototype.parseMessageText = function(){
 
 CustomBot.prototype.prettyQueue = function(){
   var queue_names = queue.map(function(el) {
-    var name = el.real_name || el.name
+    var name = el.real_name || el.name;
     console.log(queue);
     return (queue.indexOf(el) + 1) + ") " + name;
   });
 
-  return "\n*Current Queue*\n"
-    + (queue_names.length ? queue_names.join("\n") : "*_empty_*");
+  return "\n*Current Queue*\n" +
+    (queue_names.length ? queue_names.join("\n") : "*_empty_*");
 };
 
 CustomBot.prototype.prettyAttendance = function(){
@@ -59,55 +59,32 @@ CustomBot.prototype.prettyAttendance = function(){
     bot_flavor.attendance_zero || "*_Really?! No one is here today?!_*";
 
   var presentArray = present.map(function(user){
-    return "- " + user.real_name;
+    return "- " + (user.real_name || user.name);
   });
 
-  return "*Attendance*\n"
-    + (presentArray.length ? presentArray.join("\n") : attendance_zero);
+  return "*Attendance*\n" +
+    (presentArray.length ? presentArray.join("\n") : attendance_zero);
 };
 
 CustomBot.prototype.randomQuote = function(){
-  var quotes = bot_flavor["quotes"] || ["Hello!", ":D"];
+  var quotes = bot_flavor.quotes || ["Hello!", ":D"];
   var quote = quotes[Math.floor(Math.random()*quotes.length)];
 
   return quote.replace(/<user>/g, this.full_name);
 };
 
-CustomBot.prototype.sendQueueMessage = function(msg){
-  this.bot.sendMessage(
-    this.message.channel,
-    `${msg}\n ${this.prettyQueue()}`
-  );
-};
-
-CustomBot.prototype.addToQueue = function(){
-  var user = this.message.user;
-
-  if(queue.some(function(el){ return el.id === user })){
-    var queue_message = bot_flavor.queue || "Already in queue.";
-    this.sendQueueMessage(queue_message);
-  } else {
-    var random_quote = this.randomQuote();
-    var self = this;
-
-    this.bot.api(
-      "users.info",
-      { user: this.message.user },
-      function(data) {
-        queue.push(data.user);
-        self.backup(queue);
-        self.sendQueueMessage(random_quote);
-      }
-    );
-  }
-};
-
 CustomBot.prototype.clearQueue = function(){
-  // @TODO PERMISSION LEVEL: TA
-  var response = bot_flavor.cleared || "Queue cleared";
+  var response = bot_flavor.queue_cleared || "Queue cleared";
   queue = [];
   this.bot.sendMessage(this.message.channel, response);
   this.backup(queue);
+};
+
+CustomBot.prototype.clearAttendance = function(){
+  var response = bot_flavor.attendance_cleared || "Attendance cleared";
+  present = [];
+  this.bot.sendMessage(this.message.channel, response);
+  this.backupAttendance(present, secret);
 };
 
 CustomBot.prototype.greet = function(){
@@ -135,7 +112,6 @@ CustomBot.prototype.removeMe = function(){
 };
 
 CustomBot.prototype.next = function(){
-  // @TODO PERMISSION LEVEL: TA
   var currentStudent = queue.shift();
 
   if(currentStudent){
@@ -163,32 +139,75 @@ CustomBot.prototype.help = function(){
 };
 
 CustomBot.prototype.attendance = function(){
-  // @TODO PERMISSION LEVEL: ADMIN
-  console.log(this.present);
   this.bot.sendMessage(this.channel, this.prettyAttendance());
 };
 
-CustomBot.prototype.setSecret = function(){
-  // @TODO PERMISSION LEVEL: ADMIN
-  capture = /set secret\s*(\S*).*/.exec(text);
-  secret = capture[1];
-  this.backupAttendance(this.present, secret);
+CustomBot.prototype.setSecret = function(text){
+  var capture = /set secret\s*(\S*).*/.exec(text);
+  var secret = capture[1];
 
+  fs.writeFile(
+    "./attendance-db.json",
+    JSON.stringify({
+      present: present,
+      secret: secret
+    })
+  );
+
+  console.log(bot_flavor.secret_set || "Secret word has been updated");
+};
+
+CustomBot.prototype.sendQueueMessage = function(msg){
   this.bot.sendMessage(
-    this.user,
-    (bot_flavor.secret_set || "Secret word has been set to ") + secret
+    this.message.channel,
+    `${msg}\n ${this.prettyQueue()}`
+  );
+};
+
+CustomBot.prototype.addToQueue = function(){
+  var user = this.message.user;
+
+  if(queue.some(function(el){ return el.id === user; })){
+    var queue_message = bot_flavor.already_queued || "Already in queue.";
+    this.sendQueueMessage(queue_message);
+  } else {
+    var random_quote = this.randomQuote();
+    var self = this;
+
+    this.bot.api(
+      "users.info",
+      { user: user },
+      function(data) {
+        queue.push(data.user);
+        self.backup(queue);
+        self.sendQueueMessage(random_quote);
+      }
+    );
+  }
+};
+
+CustomBot.prototype.sendAttendanceMessage = function(msg){
+  this.bot.sendMessage(
+    this.message.channel,
+    `${msg}\n`
   );
 };
 
 CustomBot.prototype.addToAttendance = function(){
   if(present.indexOf(this.user) == -1){
-    // @TODO Use API to fetch user object, prettyAttendance expects this
-    // Move this to callback
-    present.push(this.user);
-    this.backupAttendance(this.present, this.secret);
-    this.bot.sendMessage(
-      this.user,
-      bot_flavor.present || "You've been marked as present!"
+    var self = this;
+
+    this.bot.api(
+      "users.info",
+      { user: this.message.user },
+      function(data) {
+        present.push(data.user);
+        self.backupAttendance(present, secret);
+        self.sendAttendanceMessage(
+          (data.user.real_name || data.user.name) + " " +
+            (bot_flavor.present || "You've been marked as present!")
+        );
+      }
     );
   }
 };
@@ -196,11 +215,13 @@ CustomBot.prototype.addToAttendance = function(){
 CustomBot.prototype.getAccessLevel = function(){
   var access_level = 0;
 
-  if(this.user == this.admin_id){
+  if(this.user === this.admin_id){
     access_level = 3;
   } else if(this.user === this.ta_id){
     access_level = 2;
   }
+
+  return access_level;
 };
 
 CustomBot.prototype.respond = function(message){
@@ -214,17 +235,13 @@ CustomBot.prototype.respond = function(message){
 
   switch(text){
     case "hello":
-      this.bot.sendMessage(
-        this.channel, `Hello, ${this.full_name}: ${this.accessLevel()}`
-      );
+      this.bot.sendMessage(this.channel, `Hello, ${this.full_name}`);
       break;
     case "status":
       this.bot.sendMessage(this.channel, this.prettyQueue());
       break;
     case "what is my user id?":
-      this.bot.sendMessage(
-        this.channel, "Your id is: " + this.user
-      );
+      this.bot.sendMessage(this.channel, "Your id is: " + this.user);
       break;
     case "q me":
     case "queue me":
@@ -234,23 +251,28 @@ CustomBot.prototype.respond = function(message){
     case "remove me":
       this.removeMe();
       break;
-    case "clear queue":
-      this.clearQueue();
-      break;
-    case "next":
-      this.next();
-      break;
     case "help":
       this.help();
-      break;
-    case "attendance":
-      this.attendance();
       break;
     case secret:
       this.addToAttendance();
       break;
+    case "clear queue":
+      if(this.access_level >= 2) this.clearQueue();
+      break;
+    case "next":
+      if(this.access_level >= 2) this.next();
+      break;
+    case "attendance":
+      if(this.access_level >= 2) this.attendance();
+      break;
+    case "clear attendance":
+      if(this.access_level >= 2) this.clearAttendance();
+      break;
     default:
-      if(/set secret\s*.*/.test(text)) this.setSecret();
+      if(/set secret\s*.*/.test(text)){
+        if(this.access_level >= 3) this.setSecret(text);
+      }
   }
 };
 
