@@ -10,10 +10,10 @@ var taID = envVars['TA_ID'];
 var adminID = envVars['ADMIN_ID'];
 
 var bot = new slackbot(botKey);
-var custom_bot = require('./custom-bot-functions')(bot, taID, adminID);
+var bot_functions = require('./bot-functions')(bot, taID, adminID);
 var easterEggs = require('./easter-eggs')(bot, taID);
 
-bot.use(custom_bot);
+bot.use(bot_functions);
 
 for (var key in easterEggs) {
   bot.use(easterEggs[key]);

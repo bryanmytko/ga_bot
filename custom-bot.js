@@ -1,5 +1,5 @@
 var fs = require('fs'),
-    bot_flavor = require('./bot_flavor');
+    bot_flavor = require('./bot-flavor');
 
 var present =
       JSON.parse(fs.readFileSync("./attendance-db.json","utf8")).present,
@@ -276,13 +276,4 @@ CustomBot.prototype.respond = function(message){
   }
 };
 
-module.exports = function(bot, taID, adminID) {
-  const custom_bot = new CustomBot(bot, taID, adminID);
-
-  const custom_bot_functions = function(message, cb) {
-    if(message.type === "hello") custom_bot.greet(message);
-    if(message.type === "message") custom_bot.respond(message);
-  };
-
-  return custom_bot_functions;
-};
+exports.CustomBot = CustomBot;
