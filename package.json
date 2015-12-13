@@ -28,5 +28,7 @@
     "url": "https://github.com/bryanmytko/ga-bot"
   },
   "homepage": "https:bryanmytko/ga-bot#readme",
-  "devDependencies": {}
+  "devDependencies": {
+    "mocha-sinon": "^1.1.4"
+  }
 }
