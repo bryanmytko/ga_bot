@@ -144,7 +144,7 @@ CustomBot.prototype.attendance = function(){
 
 CustomBot.prototype.setSecret = function(text){
   var capture = /set secret\s*(\S*).*/.exec(text);
-  var secret = capture[1];
+  secret = capture[1];
 
   fs.writeFile(
     "./attendance-db.json",
