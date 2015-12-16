@@ -36,6 +36,11 @@ CustomBot.prototype.backupAttendance = function(present_array, secret){
 };
 
 CustomBot.prototype.parseMessageText = function(){
+  if(this.message.text === undefined){
+    console.log(this.message);
+    return "";
+  }
+
   var text = this.message.text.split(/<.*>:?\s*/)[1];
 
   if(text !== undefined){
