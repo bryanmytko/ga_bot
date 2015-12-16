@@ -51,7 +51,6 @@ CustomBot.prototype.parseMessageText = function(){
 CustomBot.prototype.prettyQueue = function(){
   var queue_names = queue.map(function(el) {
     var name = el.real_name || el.name;
-    console.log(queue);
     return (queue.indexOf(el) + 1) + ") " + name;
   });
 
