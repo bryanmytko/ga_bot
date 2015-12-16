@@ -11,11 +11,11 @@ var CustomBot = require("../custom-bot.js").CustomBot,
     bot = new CustomBot();
 
 describe("CustomBot", function(){
-  beforeEach(function(){
-    sinon.spy(console, "log");
-  });
-
   describe("#greeting()", function(){
+    beforeEach(function(){
+      sinon.spy(console, "log");
+    });
+
     it("should return a greeting", function(){
       bot.greet();
 
@@ -23,6 +23,26 @@ describe("CustomBot", function(){
       expect(console.log.calledWith(
           bot_flavor.greeting || "Hello. Bot is online!"
       )).to.be.true;
+    });
+  });
+
+  describe ("#parseMessageText()", function(){
+    describe("when the message is valid", function(){
+      it("returns the parsed text", function(){
+        bot.message = { text: "<@test_bot>: hello" }
+        var result = bot.parseMessageText();
+
+        expect(result).to.eq("hello");
+      });
+    });
+
+    describe("when the message is invalid", function(){
+      it("returns nothing", function(){
+        bot.message = { text: "" }
+        var result = bot.parseMessageText();
+
+        expect(result).to.eq("");
+      });
     });
   });
 });
