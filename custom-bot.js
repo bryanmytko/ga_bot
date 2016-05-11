@@ -222,10 +222,6 @@ CustomBot.prototype.getAccessLevel = function(){
   return access_level;
 };
 
-CustomBot.prototype.ping = function(){
-  this.bot.sendPing();
-};
-
 CustomBot.prototype.respond = function(message){
   this.message = message;
   this.channel = message.channel;

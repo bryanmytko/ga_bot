@@ -60,7 +60,7 @@ slackbot.prototype.api = function(method, params, cb) {
       });
     }
   });
-  
+
   req.write(post_data);
   return req.end();
 };
@@ -89,21 +89,17 @@ slackbot.prototype.sendMessage = function(channel, text) {
   return this.ws.send(JSON.stringify(message));
 };
 
-slackbot.prototype.sendPing = function(){
-  var message = {
-    id: ++this.messageID,
-    type: 'ping'
-  };
-
-  return this.ws.send(JSON.stringify(message));
-};
-
 slackbot.prototype.connect = function() {
     var self = this;
     self.api('rtm.start', {agent: 'node-slack', simple_latest: true, no_unreads: true}, function(data) {
       self.selfData = data.self;
       self.mention = "<@" + self.selfData.id + ">";
       self.ws = new ws(data.url);
+
+      self.ws.on('ping', function(){
+        self.ws.pong();
+      });
+
       self.ws.on('message', function(data, flags) {
         var message = JSON.parse(data);
         self.handle(message);
