@@ -89,6 +89,15 @@ slackbot.prototype.sendMessage = function(channel, text) {
   return this.ws.send(JSON.stringify(message));
 };
 
+slackbot.prototype.sendPing = function(){
+  var message = {
+    id: ++this.messageID,
+    type: 'ping'
+  };
+
+  return this.ws.send(JSON.stringify(message));
+};
+
 slackbot.prototype.connect = function() {
     var self = this;
     self.api('rtm.start', {agent: 'node-slack', simple_latest: true, no_unreads: true}, function(data) {
@@ -99,7 +108,7 @@ slackbot.prototype.connect = function() {
         var message = JSON.parse(data);
         self.handle(message);
       });
-    });    
+    });
 };
 
 module.exports = slackbot;
