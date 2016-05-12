@@ -6,11 +6,11 @@ var bot_flavor = {
   "empty_queue": null,
   "attendance_cleared": "Attendance cleared",
   "attendance_zero": null,
-  "greeting": "Mugatu-Bot connected... NOW GET ME A DAMN LATTE...",
+  "greeting": "Barbra Streisand connected... ♬ ♪ Happy Days Are Here Again ♬ ♪",
   "quotes": [
-    "They're break dance fighting...",
-    "As a catepillar becomes a butterfly...",
-    "That Hansel... So hot right now..."
+    "Papa, Can You Hear Me?",
+    "You Don’t Bring Me Flowers...",
+    "Don’t Rain on My Parade!"
   ],
 };
 
