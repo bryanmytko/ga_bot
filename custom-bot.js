@@ -1,20 +1,24 @@
-var fs = require('fs'),
-    bot_flavor = require('./bot-flavor');
+var fs = require('fs');
 
-var present =
-      JSON.parse(fs.readFileSync("./attendance-db.json","utf8")).present,
-    secret =
-      JSON.parse(fs.readFileSync("./attendance-db.json", "utf8")).secret,
-    queue =
-      JSON.parse(fs.readFileSync("./db.json", "utf8")).queue;
-
-function CustomBot(bot, ta_id, admin_id){
+function CustomBot(bot, ta_id, admin_id, present, secret, queue, bot_flavor){
   this.bot = bot;
   this.ta_id = ta_id;
   this.admin_id = admin_id;
+  this.present = present;
+  this.secret = this.validateSecret(secret);
+  this.queue = queue;
+  this.bot_flavor = bot_flavor;
 
   return this;
 }
+
+CustomBot.prototype.validateSecret = function(secret){
+  if(secret === "" || secret === undefined || secret === null){
+    return Math.random().toString(36).substring(7);
+  } else {
+    return secret;
+  }
+};
 
 CustomBot.prototype.backup = function(queue_array) {
   fs.writeFile(
@@ -37,6 +41,7 @@ CustomBot.prototype.backupAttendance = function(present_array, secret){
 
 CustomBot.prototype.parseMessageText = function(){
   var text = this.message.text || "";
+  /* Parse better, withouth user as well! */
   text = text.split(/<.*>:?\s*/)[1] || "";
 
   return text.trim();
@@ -54,7 +59,7 @@ CustomBot.prototype.prettyQueue = function(){
 
 CustomBot.prototype.prettyAttendance = function(){
   var attendance_zero =
-    bot_flavor.attendance_zero || "*_Really?! No one is here today?!_*";
+    this.bot_flavor.attendance_zero || "*_Really?! No one is here today?!_*";
 
   var presentArray = present.map(function(user){
     return "- " + (user.real_name || user.name);
@@ -65,28 +70,28 @@ CustomBot.prototype.prettyAttendance = function(){
 };
 
 CustomBot.prototype.randomQuote = function(){
-  var quotes = bot_flavor.quotes || ["Hello!", ":D"];
+  var quotes = this.bot_flavor.quotes || ["Hello!", ":D"];
   var quote = quotes[Math.floor(Math.random()*quotes.length)];
 
   return quote.replace(/<user>/g, this.full_name);
 };
 
 CustomBot.prototype.clearQueue = function(){
-  var response = bot_flavor.queue_cleared || "Queue cleared";
+  var response = this.bot_flavor.queue_cleared || "Queue cleared";
   queue = [];
   this.bot.sendMessage(this.message.channel, response);
   this.backup(queue);
 };
 
 CustomBot.prototype.clearAttendance = function(){
-  var response = bot_flavor.attendance_cleared || "Attendance cleared";
+  var response = this.bot_flavor.attendance_cleared || "Attendance cleared";
   present = [];
   this.bot.sendMessage(this.message.channel, response);
   this.backupAttendance(present, secret);
 };
 
 CustomBot.prototype.greet = function(){
-  const greeting = bot_flavor.greeting || "Hello. Bot is online!";
+  const greeting = this.bot_flavor.greeting || "Hello. Bot is online!";
   console.log(greeting);
 };
 
@@ -103,7 +108,7 @@ CustomBot.prototype.removeMe = function(){
     queue.splice(queue.indexOf(userToRemove[0]), 1);
     this.bot.sendMessage(
       this.channel,
-      (bot_flavor.remove || ":wave:") + "\n" + this.prettyQueue()
+      (this.bot_flavor.remove || ":wave:") + "\n" + this.prettyQueue()
     );
     this.backup(queue);
   }
@@ -122,7 +127,7 @@ CustomBot.prototype.next = function(){
   } else {
     this.bot.sendMessage(
       this.channel,
-      bot_flavor.empty_queue || "The queue is empty."
+      this.bot_flavor.empty_queue || "The queue is empty."
     );
   }
 };
@@ -142,17 +147,18 @@ CustomBot.prototype.attendance = function(){
 
 CustomBot.prototype.setSecret = function(text){
   var capture = /set secret\s*(\S*).*/.exec(text);
-  secret = capture[1];
+  captured_secret = capture[1];
+  this.secret = this.validateSecret(captured_secret);
 
   fs.writeFile(
     "./attendance-db.json",
     JSON.stringify({
-      present: present,
-      secret: secret
+      present: this.present,
+      secret: this.secret
     })
   );
 
-  console.log(bot_flavor.secret_set || "Secret word has been updated");
+  console.log(this.bot_flavor.secret_set || "Secret word has been updated");
 };
 
 CustomBot.prototype.sendQueueMessage = function(msg){
@@ -166,7 +172,7 @@ CustomBot.prototype.addToQueue = function(){
   var user = this.message.user;
 
   if(queue.some(function(el){ return el.id === user; })){
-    var queue_message = bot_flavor.already_queued || "Already in queue.";
+    var queue_message = this.bot_flavor.already_queued || "Already in queue.";
     this.sendQueueMessage(queue_message);
   } else {
     var random_quote = this.randomQuote();
@@ -192,18 +198,18 @@ CustomBot.prototype.sendAttendanceMessage = function(msg){
 };
 
 CustomBot.prototype.addToAttendance = function(){
-  if(present.indexOf(this.user) == -1){
+  if(this.present.indexOf(this.user) == -1){
     var self = this;
 
     this.bot.api(
       "users.info",
       { user: this.message.user },
       function(data) {
-        present.push(data.user);
-        self.backupAttendance(present, secret);
+        self.present.push(data.user);
+        self.backupAttendance(self.present, self.secret);
         self.sendAttendanceMessage(
           (data.user.real_name || data.user.name) + " " +
-            (bot_flavor.present || "You've been marked as present!")
+            (self.bot_flavor.present || "You've been marked as present!")
         );
       }
     );
@@ -252,7 +258,7 @@ CustomBot.prototype.respond = function(message){
     case "help":
       this.help();
       break;
-    case secret:
+    case this.secret:
       this.addToAttendance();
       break;
     case "clear queue":
