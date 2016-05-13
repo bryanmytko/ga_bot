@@ -47,9 +47,11 @@ CustomBot.prototype.parseMessageText = function(){
 };
 
 CustomBot.prototype.prettyQueue = function(){
-  var queue_names = queue.map(function(el) {
+  var self = this;
+
+  var queue_names = this.queue.map(function(el) {
     var name = el.real_name || el.name;
-    return (queue.indexOf(el) + 1) + ") " + name;
+    return (self.queue.indexOf(el) + 1) + ") " + name;
   });
 
   return "\n*Current Queue*\n" +
@@ -60,7 +62,7 @@ CustomBot.prototype.prettyAttendance = function(){
   var attendance_zero =
     this.bot_flavor.attendance_zero || "*_Really?! No one is here today?!_*";
 
-  var presentArray = present.map(function(user){
+  var presentArray = this.present.map(function(user){
     return "- " + (user.real_name || user.name);
   });
 
@@ -86,7 +88,7 @@ CustomBot.prototype.clearAttendance = function(){
   var response = this.bot_flavor.attendance_cleared || "Attendance cleared";
   present = [];
   this.bot.sendMessage(this.message.channel, response);
-  this.backupAttendance(present, secret);
+  this.backupAttendance(this.present, this.secret);
 };
 
 CustomBot.prototype.greet = function(){
@@ -97,19 +99,19 @@ CustomBot.prototype.greet = function(){
 CustomBot.prototype.removeMe = function(){
   var self = this;
 
-  var userToRemove = queue.filter(
+  var userToRemove = this.queue.filter(
     function(user) {
       return user.id === self.user;
     }
   );
 
   if (userToRemove.length) {
-    queue.splice(queue.indexOf(userToRemove[0]), 1);
+    this.queue.splice(this.queue.indexOf(userToRemove[0]), 1);
     this.bot.sendMessage(
       this.channel,
       (this.bot_flavor.remove || ":wave:") + "\n" + this.prettyQueue()
     );
-    this.backup(queue);
+    this.backup(this.queue);
   }
 };
 
@@ -170,7 +172,7 @@ CustomBot.prototype.sendQueueMessage = function(msg){
 CustomBot.prototype.addToQueue = function(){
   var user = this.message.user;
 
-  if(queue.some(function(el){ return el.id === user; })){
+  if(this.queue.some(function(el){ return el.id === user; })){
     var queue_message = this.bot_flavor.already_queued || "Already in queue.";
     this.sendQueueMessage(queue_message);
   } else {
@@ -181,8 +183,8 @@ CustomBot.prototype.addToQueue = function(){
       "users.info",
       { user: user },
       function(data) {
-        queue.push(data.user);
-        self.backup(queue);
+        self.queue.push(data.user);
+        self.backup(self.queue);
         self.sendQueueMessage(random_quote);
       }
     );
