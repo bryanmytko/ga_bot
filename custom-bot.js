@@ -41,10 +41,9 @@ CustomBot.prototype.backupAttendance = function(present_array, secret){
 
 CustomBot.prototype.parseMessageText = function(){
   var text = this.message.text || "";
-  /* Parse better, withouth user as well! */
   text = text.split(/<.*>:?\s*/)[1] || "";
 
-  return text.trim();
+  return (text === "") ? this.message.text : text.trim();
 };
 
 CustomBot.prototype.prettyQueue = function(){
