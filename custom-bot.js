@@ -1,12 +1,8 @@
-var fs = require('fs');
-
-function CustomBot(bot, ta_id, admin_id, present, secret, queue, bot_flavor){
+function CustomBot(bot, ta_id, admin_id, bot_flavor){
   this.bot = bot;
   this.ta_id = ta_id;
   this.admin_id = admin_id;
-  this.present = present;
-  this.secret = this.validateSecret(secret);
-  this.queue = queue;
+  // this.secret = this.validateSecret(secret); @TODO get secret from db
   this.bot_flavor = bot_flavor;
 
   return this;
