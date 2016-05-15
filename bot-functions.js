@@ -4,20 +4,10 @@ module.exports = function(bot, taID, adminID){
   var fs = require('fs'),
       bot_flavor = require('./bot-flavor');
 
-  var present =
-        JSON.parse(fs.readFileSync("./attendance-db.json","utf8")).present,
-      secret =
-        JSON.parse(fs.readFileSync("./attendance-db.json", "utf8")).secret,
-      queue =
-        JSON.parse(fs.readFileSync("./db.json", "utf8")).queue;
-
   const custom_bot = new CustomBot(
         bot,
         taID,
         adminID,
-        present,
-        secret,
-        queue,
         bot_flavor
       );
 
