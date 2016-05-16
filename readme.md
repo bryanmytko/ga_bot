@@ -6,7 +6,7 @@ by [Richard McDaniel](https://github.com/rmcdaniel)
 
 Based on [dianabot](https://github.com/maxrpeterson/dianabot) by [Max R. Peterson](https://github.com/maxrpeterson)
 
-This version updated & maintained by [Bryan Mytko](https://github.com/bryanmytko)
+This version written & maintained by [Bryan Mytko](https://github.com/bryanmytko)
 
 -----
 # Setup
@@ -55,8 +55,6 @@ Commands only available for the Admin:
 -------
 
 ### Issues
-
-Currently attendance & queues are kept in local data store. Feedback would be very valuable to let the developers know if it's worthwhile to convert to using a real database.
 
 To request a feature, create an issue on the [GitHub](https://github.com/bryanmytko/ga-bot)  page
 
