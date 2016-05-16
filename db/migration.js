@@ -1,5 +1,5 @@
 var sqlite3 = require('sqlite3').verbose();
-var db = new sqlite3.Database('ga_bot.sqlite3');
+var db = new sqlite3.Database('db/ga_bot.sqlite3');
 
 db.serialize(function() {
   db.run("CREATE TABLE attendance (name VARCHAR(255), created_at DATETIME)");

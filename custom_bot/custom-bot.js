@@ -1,10 +1,5 @@
 var sqlite3 = require('sqlite3').verbose();
-var db = new sqlite3.Database('ga_bot.sqlite3');
-
-
-function saveSecret(secret){
-  db.run("CREATE TABLE queue (name VARCHAR(255))");
-}
+var db = new sqlite3.Database('db/ga_bot.sqlite3');
 
 function CustomBot(bot, ta_id, admin_id, bot_flavor){
   this.bot = bot;
@@ -20,8 +15,7 @@ CustomBot.prototype.getSecret = function(){
   var self = this;
 
   db.get("SELECT * FROM secret LIMIT 1", function(err, row){
-    console.log(row.value);
-    self.secret = row.value;
+    if(row) self.secret = row.value;
   });
 };
 
@@ -38,42 +32,6 @@ CustomBot.prototype.setSecret = function(text){
 
   this.secret = secret;
   console.log(this.bot_flavor.secret_set || "Secret word has been updated");
-};
-
-CustomBot.prototype.sendAttendanceMessage = function(msg){
-  this.bot.sendMessage(
-    this.message.channel,
-    `${msg}\n`
-  );
-};
-
-CustomBot.prototype.checkAttendance = function(){
-  var self = this;
-
-  db.get(
-    "SELECT * FROM attendance WHERE name = '" + this.user + "' LIMIT 1",
-    function(err, rows){
-      if(!rows) self.insertAttendance();
-    }
-  );
-};
-
-CustomBot.prototype.insertAttendance = function(){
-  var self = this;
-
-  self.bot.api(
-    "users.info",
-    { user: self.message.user },
-    function(data) {
-      var name = data.user.real_name || data.user.name;
-      var stmt = db.prepare("INSERT INTO attendance (name) VALUES (?)");
-      stmt.run(data.user.id);
-
-      self.sendAttendanceMessage(
-         name + " " + (self.bot_flavor.present || "You've been marked as present!")
-      );
-    }
-  );
 };
 
 CustomBot.prototype.parseMessageText = function(){
@@ -95,18 +53,6 @@ CustomBot.prototype.prettyQueue = function(){
     (queue_names.length ? queue_names.join("\n") : "*_empty_*");
 };
 
-CustomBot.prototype.prettyAttendance = function(){
-  var attendance_zero =
-    this.bot_flavor.attendance_zero || "*_Really?! No one is here today?!_*";
-
-  var presentArray = this.present.map(function(user){
-    return "- " + (user.real_name || user.name);
-  });
-
-  return "*Attendance*\n" +
-    (presentArray.length ? presentArray.join("\n") : attendance_zero);
-};
-
 CustomBot.prototype.randomQuote = function(){
   var quotes = this.bot_flavor.quotes || ["Hello!", ":D"];
   var quote = quotes[Math.floor(Math.random()*quotes.length)];
@@ -119,13 +65,6 @@ CustomBot.prototype.clearQueue = function(){
   queue = [];
   this.bot.sendMessage(this.message.channel, response);
   this.backup(queue);
-};
-
-CustomBot.prototype.clearAttendance = function(){
-  var response = this.bot_flavor.attendance_cleared || "Attendance cleared";
-  present = [];
-  this.bot.sendMessage(this.message.channel, response);
-  this.backupAttendance(this.present, this.secret);
 };
 
 CustomBot.prototype.greet = function(){
@@ -176,17 +115,6 @@ CustomBot.prototype.help = function(){
     "All commands work only when you specifically mention me. " +
     "Type `queue me` or `q me` to queue yourself and `status` to check " +
     "current queue. Type `remove me` to remove yourself."
-  );
-};
-
-CustomBot.prototype.attendance = function(){
-  this.bot.sendMessage(this.channel, this.prettyAttendance());
-};
-
-CustomBot.prototype.sendQueueMessage = function(msg){
-  this.bot.sendMessage(
-    this.message.channel,
-    `${msg}\n ${this.prettyQueue()}`
   );
 };
 

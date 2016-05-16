@@ -1,8 +1,9 @@
 module.exports = function(bot, taID, adminID){
-  var CustomBot = require("./custom-bot").CustomBot;
+  var CustomBot = require("./custom_bot/custom-bot").CustomBot;
+  var Attendance = require("./custom_bot/attendance")(CustomBot);
 
   var fs = require('fs'),
-      bot_flavor = require('./bot-flavor');
+      bot_flavor = require('./custom_bot/bot-flavor');
 
   const custom_bot = new CustomBot(
         bot,
