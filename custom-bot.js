@@ -1,37 +1,78 @@
+var sqlite3 = require('sqlite3').verbose();
+var db = new sqlite3.Database('ga_bot.sqlite3');
+
+
+function saveSecret(secret){
+  db.run("CREATE TABLE queue (name VARCHAR(255))");
+}
+
 function CustomBot(bot, ta_id, admin_id, bot_flavor){
   this.bot = bot;
   this.ta_id = ta_id;
   this.admin_id = admin_id;
-  // this.secret = this.validateSecret(secret); @TODO get secret from db
   this.bot_flavor = bot_flavor;
+  this.getSecret();
 
   return this;
 }
 
-CustomBot.prototype.validateSecret = function(secret){
-  if(secret === "" || secret === undefined || secret === null){
-    return Math.random().toString(36).substring(7);
-  } else {
-    return secret;
-  }
+CustomBot.prototype.getSecret = function(){
+  var self = this;
+
+  db.get("SELECT * FROM secret LIMIT 1", function(err, row){
+    console.log(row.value);
+    self.secret = row.value;
+  });
 };
 
-CustomBot.prototype.backup = function(queue_array) {
-  fs.writeFile(
-    "./db.json",
-    JSON.stringify({
-      queue: queue_array
-    })
+CustomBot.prototype.setSecret = function(text){
+  var capture = /set secret\s*(\S*).*/.exec(text);
+  var secret = capture[1];
+
+  if(secret === "" || secret === undefined || secret === null){
+    secret = Math.random().toString(36).substring(7);
+  }
+
+  var stmt = db.prepare("INSERT INTO secret (value) VALUES (?)");
+  stmt.run(secret);
+
+  this.secret = secret;
+  console.log(this.bot_flavor.secret_set || "Secret word has been updated");
+};
+
+CustomBot.prototype.sendAttendanceMessage = function(msg){
+  this.bot.sendMessage(
+    this.message.channel,
+    `${msg}\n`
   );
 };
 
-CustomBot.prototype.backupAttendance = function(present_array, secret){
-  fs.writeFile(
-    "./attendance-db.json",
-    JSON.stringify({
-      present: present_array,
-      secret: secret
-    })
+CustomBot.prototype.checkAttendance = function(){
+  var self = this;
+
+  db.get(
+    "SELECT * FROM attendance WHERE name = '" + this.user + "' LIMIT 1",
+    function(err, rows){
+      if(!rows) self.insertAttendance();
+    }
+  );
+};
+
+CustomBot.prototype.insertAttendance = function(){
+  var self = this;
+
+  self.bot.api(
+    "users.info",
+    { user: self.message.user },
+    function(data) {
+      var name = data.user.real_name || data.user.name;
+      var stmt = db.prepare("INSERT INTO attendance (name) VALUES (?)");
+      stmt.run(data.user.id);
+
+      self.sendAttendanceMessage(
+         name + " " + (self.bot_flavor.present || "You've been marked as present!")
+      );
+    }
   );
 };
 
@@ -142,22 +183,6 @@ CustomBot.prototype.attendance = function(){
   this.bot.sendMessage(this.channel, this.prettyAttendance());
 };
 
-CustomBot.prototype.setSecret = function(text){
-  var capture = /set secret\s*(\S*).*/.exec(text);
-  captured_secret = capture[1];
-  this.secret = this.validateSecret(captured_secret);
-
-  fs.writeFile(
-    "./attendance-db.json",
-    JSON.stringify({
-      present: this.present,
-      secret: this.secret
-    })
-  );
-
-  console.log(this.bot_flavor.secret_set || "Secret word has been updated");
-};
-
 CustomBot.prototype.sendQueueMessage = function(msg){
   this.bot.sendMessage(
     this.message.channel,
@@ -182,32 +207,6 @@ CustomBot.prototype.addToQueue = function(){
         self.queue.push(data.user);
         self.backup(self.queue);
         self.sendQueueMessage(random_quote);
-      }
-    );
-  }
-};
-
-CustomBot.prototype.sendAttendanceMessage = function(msg){
-  this.bot.sendMessage(
-    this.message.channel,
-    `${msg}\n`
-  );
-};
-
-CustomBot.prototype.addToAttendance = function(){
-  if(this.present.indexOf(this.user) == -1){
-    var self = this;
-
-    this.bot.api(
-      "users.info",
-      { user: this.message.user },
-      function(data) {
-        self.present.push(data.user);
-        self.backupAttendance(self.present, self.secret);
-        self.sendAttendanceMessage(
-          (data.user.real_name || data.user.name) + " " +
-            (self.bot_flavor.present || "You've been marked as present!")
-        );
       }
     );
   }
@@ -256,7 +255,7 @@ CustomBot.prototype.respond = function(message){
       this.help();
       break;
     case this.secret:
-      this.addToAttendance();
+      this.checkAttendance();
       break;
     case "clear queue":
       if(this.access_level >= 2) this.clearQueue();
