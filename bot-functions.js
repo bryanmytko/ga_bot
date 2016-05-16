@@ -1,23 +1,14 @@
 module.exports = function(bot, taID, adminID){
-  var CustomBot = require("./custom-bot").CustomBot;
+  var CustomBot = require("./custom_bot/custom-bot").CustomBot;
+  var Attendance = require("./custom_bot/attendance")(CustomBot);
 
   var fs = require('fs'),
-      bot_flavor = require('./bot-flavor');
-
-  var present =
-        JSON.parse(fs.readFileSync("./attendance-db.json","utf8")).present,
-      secret =
-        JSON.parse(fs.readFileSync("./attendance-db.json", "utf8")).secret,
-      queue =
-        JSON.parse(fs.readFileSync("./db.json", "utf8")).queue;
+      bot_flavor = require('./custom_bot/bot-flavor');
 
   const custom_bot = new CustomBot(
         bot,
         taID,
         adminID,
-        present,
-        secret,
-        queue,
         bot_flavor
       );
 

@@ -5,3 +5,4 @@ env-vars.js
 
 .DS_STORE
 
+*.sqlite3
