@@ -34,7 +34,7 @@ CustomBot.prototype.help = function(){
 CustomBot.prototype.getSecret = function(){
   var self = this;
 
-  db.get("SELECT * FROM secret LIMIT 1", function(err, row){
+  db.get("SELECT * FROM secret", function(err, row){
     if(row) self.secret = row.value;
     console.log("The current attendance secret is: " + self.secret);
   });
@@ -48,7 +48,7 @@ CustomBot.prototype.setSecret = function(text){
     secret = Math.random().toString(36).substring(7);
   }
 
-  var stmt = db.prepare("INSERT INTO secret (value) VALUES (?)");
+  var stmt = db.prepare("UPDATE secret SET value = (?)");
   stmt.run(secret);
 
   this.secret = secret;
@@ -114,7 +114,7 @@ CustomBot.prototype.respond = function(message){
       if(this.access_level >= 2) this.next();
       break;
     case "attendance":
-      if(this.access_level >= 2) this.attendance();
+      if(this.access_level >= 2) this.printAttendance();
       break;
     case "clear attendance":
       if(this.access_level >= 2) this.clearAttendance();
