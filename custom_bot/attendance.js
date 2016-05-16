@@ -47,20 +47,23 @@ module.exports = function(CustomBot){
     );
   };
 
-  CustomBot.prototype.prettyAttendance = function(){
-    var attendance_zero =
-      this.bot_flavor.attendance_zero || "*_Really?! No one is here today?!_*",
+  CustomBot.prototype.printAttendance = function(){
+    var str =
+      this.bot_flavor.attendance_zero || "*No one is here yet.*",
       today = new Date().setHours(0,0,0,0),
       self = this;
 
-    db.get(
+    db.all(
       "SELECT * FROM attendance WHERE created_at = '" + today + "'",
       function(err, rows){
         var attendance = rows.map(function(row){
-          row.name; // Need real name!
+          return "\t• " + row.real_name;
         });
-        var str = "*Attendance*\n" + attendance.join("\n");
-        this.bot.sendMessage(this.channel, str);
+
+        if(attendance.length !== 0)
+          str = "*Attendance:*\n" + attendance.join("\n");
+
+        self.bot.sendMessage(self.channel, str);
       }
     );
   };
@@ -69,15 +72,5 @@ module.exports = function(CustomBot){
     db.run("DELETE FROM attendance");
     var response = this.bot_flavor.attendance_cleared || "Attendance cleared";
     this.bot.sendMessage(this.message.channel, response);
-  };
-
-  CustomBot.prototype.attendance = function(){
-  };
-
-  CustomBot.prototype.sendQueueMessage = function(msg){
-    this.bot.sendMessage(
-      this.message.channel,
-      `${msg}\n ${this.prettyQueue()}`
-    );
   };
 };
