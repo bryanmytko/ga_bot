@@ -13,6 +13,7 @@ This version written & maintained by [Bryan Mytko](https://github.com/bryanmytko
 
 1. Create a bot on Slack [here](https://my.slack.com/services/new/bot) and invite the bot to your channel.
 1. Set the bot's key to an environment variable `SLACKBOT_KEY`
+1. Set up the datbase by running `node db/migrations.js`
 1. Run `node app.js` to start the bot.
 1. Communicate with the bot by typing commands directly to the bot via mention or private message in Slack.
 1. There are permission levels for certain commands. These can be set with environment variables `TA_ID` and `ADMIN_ID`
