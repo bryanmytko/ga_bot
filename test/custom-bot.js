@@ -8,7 +8,8 @@ var slackbot = require('../slackbot-new'),
     envVars = require('../env-vars'),
     botKey = envVars['SLACKBOT_KEY'],
     bot_flavor = require("../custom_bot/bot-flavor"),
-    bot = new slackbot(botKey);
+    bot = new slackbot(botKey),
+    ws = require('ws');
 
     chai.use(sinonChai);
 
@@ -51,6 +52,18 @@ describe("CustomBot", function(){
 
         expect(result).to.eq("");
       });
+    });
+  });
+
+  describe("#help()", function(){
+
+    it("sends the help information message", function(){
+      var send = sinon.stub(slackbot.prototype, "sendMessage");
+
+      bot.help();
+
+      expect(send.calledOnce).to.be.true;
+      expect(send.calledWith(bot.message.channel)).to.be.true;
     });
   });
 
