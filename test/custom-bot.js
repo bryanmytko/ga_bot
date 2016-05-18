@@ -34,7 +34,7 @@ describe("CustomBot", function(){
     });
   });
 
-  describe ("#parseMessageText()", function(){
+  describe("#parseMessageText()", function(){
     describe("when the message is valid", function(){
       it("returns the parsed text", function(){
         bot.message = { text: "<@test_bot>: hello" };
@@ -53,10 +53,36 @@ describe("CustomBot", function(){
       });
     });
   });
-});
 
-describe("Messages", function(){
-  describe("what is my user id?", function(){
-    bot.respond("what is my user id?");
+  describe("#getAccessLevel()", function(){
+    beforeEach(function(){
+      bot.admin_id = 1;
+      bot.ta_id = 2;
+
+      var admin_access_level = 3;
+      var ta_access_level = 2;
+      var student_access_level = 0;
+    });
+
+    it("returns the correct access level for an admin", function(){
+      bot.user = bot.admin_id;
+      var access_level = bot.getAccessLevel();
+
+      expect(access_level).to.eq(3);
+    });
+
+    it("returns the correct access level for a TA", function(){
+      bot.user = bot.ta_id;
+      var access_level = bot.getAccessLevel();
+
+      expect(access_level).to.eq(2);
+    });
+
+    it("returns the correct access level for a student", function(){
+      bot.user = 12345;
+      var access_level = bot.getAccessLevel();
+
+      expect(access_level).to.eq(0);
+    });
   });
 });

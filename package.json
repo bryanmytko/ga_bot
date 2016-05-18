@@ -30,6 +30,7 @@
   },
   "homepage": "https:bryanmytko/ga-bot#readme",
   "devDependencies": {
+    "mocha": "^2.3.4",
     "mocha-sinon": "^1.1.4"
   }
 }
