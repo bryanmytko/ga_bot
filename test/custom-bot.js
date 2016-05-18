@@ -15,6 +15,9 @@ var slackbot = require('../slackbot-new'),
 var CustomBot = require("../custom_bot/custom-bot.js").CustomBot,
     bot = new CustomBot(bot, 1, 2, bot_flavor);
 
+var CustomBot = require("../custom_bot/custom-bot").CustomBot;
+var Attendance = require("../custom_bot/attendance")(CustomBot);
+
 describe("CustomBot", function(){
   describe("#greeting()", function(){
     beforeEach(function(){
@@ -34,7 +37,7 @@ describe("CustomBot", function(){
   describe ("#parseMessageText()", function(){
     describe("when the message is valid", function(){
       it("returns the parsed text", function(){
-        bot.message = { text: "<@test_bot>: hello" }
+        bot.message = { text: "<@test_bot>: hello" };
         var result = bot.parseMessageText();
 
         expect(result).to.eq("hello");
@@ -43,11 +46,17 @@ describe("CustomBot", function(){
 
     describe("when the message is invalid", function(){
       it("returns nothing", function(){
-        bot.message = { text: "" }
+        bot.message = { text: "" };
         var result = bot.parseMessageText();
 
         expect(result).to.eq("");
       });
     });
+  });
+});
+
+describe("Messages", function(){
+  describe("what is my user id?", function(){
+    bot.respond("what is my user id?");
   });
 });
