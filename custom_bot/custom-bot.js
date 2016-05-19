@@ -88,7 +88,7 @@ CustomBot.prototype.respond = function(message){
       this.bot.sendMessage(this.channel, `Hello, ${this.full_name}`);
       break;
     case "status":
-      this.bot.sendMessage(this.channel, this.prettyQueue());
+      this.bot.sendMessage(this.channel, this.viewQueue());
       break;
     case "what is my user id?":
       this.bot.sendMessage(this.channel, "Your id is: " + this.user);
