@@ -1,46 +1,32 @@
 var db = require("./database")();
 
 module.exports = function(CustomBot){
+
   CustomBot.prototype.addToQueue = function(){
     var self = this;
+    var check_and_insert = function(err, rows){
+      if(rows){
+        var queue_message =
+          self.bot_flavor.already_queued || "You're already in queue.";
+        self.bot.sendMessage(self.channel, queue_message);
+      } else {
+        db.run("INSERT INTO queue (name) VALUES ('" + self.name + "')");
+        // show queue
+      }
+    };
 
     self.bot.api(
       "users.info",
       { user: self.message.user },
       function(data) {
-        var name = data.user.real_name || data.user.name;
+        self.name = data.user.real_name || data.user.name;
 
-        db.get("SELECT name FROM queue WHERE name='" + name + "' LIMIT 1",
-          function(err, rows){
-            if(rows){
-              var queue_message =
-                self.bot_flavor.already_queued || "You're already in queue.";
-              self.bot.sendMessage(self.channel, queue_message);
-            } else {
-              db.run("INSERT INTO queue (name) VALUES ('" + name + "')");
-              // show queue
-            }
-          });
-      });
-
-    // @TODO
-    // var user = this.message.user;
-    //
-    // if(this.queue.some(function(el){ return el.id === user; })){
-    // } else {
-    //   var random_quote = this.randomQuote();
-    //   var self = this;
-    //
-    //   this.bot.api(
-    //     "users.info",
-    //     { user: user },
-    //     function(data) {
-    //       self.queue.push(data.user);
-    //       self.backup(self.queue);
-    //       self.sendQueueMessage(random_quote);
-    //     }
-    //   );
-    // }
+        db.get(
+          "SELECT name FROM queue WHERE name='" + self.name + "' LIMIT 1",
+          check_and_insert
+        );
+      }
+    )
   };
 
   CustomBot.prototype.removeMe = function(){
@@ -90,7 +76,7 @@ module.exports = function(CustomBot){
     // }
   };
 
-  CustomBot.prototype.viewQueue = function(){
+  CustomBot.prototype.printQueue = function(){
     // @TODO
     // var self = this;
     //
