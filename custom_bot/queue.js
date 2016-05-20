@@ -50,11 +50,9 @@ module.exports = function(CustomBot){
   };
 
   CustomBot.prototype.clearQueue = function(){
-    // @TODO
-    // var response = this.bot_flavor.queue_cleared || "Queue cleared";
-    // queue = [];
-    // this.bot.sendMessage(this.message.channel, response);
-    // this.backup(queue);
+    db.run("DELETE FROM queue");
+    var response = this.bot_flavor.queue_cleared || "Queue cleared";
+    this.bot.sendMessage(this.message.channel, response);
   };
 
   CustomBot.prototype.next = function(){
