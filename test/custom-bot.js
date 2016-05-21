@@ -7,7 +7,7 @@ var chai = require("chai"),
 var slackbot = require('../slackbot-new'),
     envVars = require('../env-vars'),
     botKey = envVars['SLACKBOT_KEY'],
-    bot_flavor = require("../custom_bot/bot-flavor"),
+    bot_flavor = require("./bot-flavor"),
     bot = new slackbot(botKey),
     ws = require('ws');
 
@@ -96,6 +96,13 @@ describe("CustomBot", function(){
       var access_level = bot.getAccessLevel();
 
       expect(access_level).to.eq(0);
+    });
+  });
+
+  describe("#randomQuote", function(){
+    it("returns a random quote", function(){
+      var quote = bot.randomQuote();
+      expect(quote).to.be.oneOf(["Hello!", ":D"]);
     });
   });
 });
