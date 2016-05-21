@@ -10,8 +10,10 @@ module.exports = function(CustomBot){
           self.bot_flavor.already_queued || "You're already in queue.";
         self.bot.sendMessage(self.channel, queue_message);
       } else {
-        db.run("INSERT INTO queue (name) VALUES ('" + self.name + "')");
-        // show queue
+        db.run(
+            "INSERT INTO queue (user_id, name) "
+            + "VALUES ('" + self.user + "', '" + self.name + "')");
+        self.printQueue();
       }
     };
 
@@ -30,23 +32,13 @@ module.exports = function(CustomBot){
   };
 
   CustomBot.prototype.removeMe = function(){
-    // @TODO
-    // var self = this;
-    //
-    // var userToRemove = this.queue.filter(
-    //   function(user) {
-    //     return user.id === self.user;
-    //   }
-    // );
-    //
-    // if (userToRemove.length) {
-    //   this.queue.splice(this.queue.indexOf(userToRemove[0]), 1);
-    //   this.bot.sendMessage(
-    //     this.channel,
-    //     (this.bot_flavor.remove || ":wave:") + "\n" + this.prettyQueue()
-    //   );
-    //   this.backup(this.queue);
-    // }
+    var user_id = this.user;
+    db.run("DELETE FROM queue WHERE user_id='" + user_id + "'");
+    this.bot.sendMessage(
+      this.channel,
+      this.bot_flavor.remove || ":wave:"
+    );
+    this.printQueue()
   };
 
   CustomBot.prototype.clearQueue = function(){
@@ -75,15 +67,22 @@ module.exports = function(CustomBot){
   };
 
   CustomBot.prototype.printQueue = function(){
-    // @TODO
-    // var self = this;
-    //
-    // var queue_names = this.queue.map(function(el) {
-    //   var name = el.real_name || el.name;
-    //   return (self.queue.indexOf(el) + 1) + ") " + name;
-    // });
-    //
-    // return "\n*Current Queue*\n" +
-    //   (queue_names.length ? queue_names.join("\n") : "*_empty_*");
+    var str =
+      this.bot_flavor.empty_queue || "_Currently empty_",
+      self = this;
+
+    db.all(
+      "SELECT * FROM queue",
+      function(err, rows){
+        var queue = rows.map(function(row){
+          return "\t• " + row.name;
+        });
+
+        if(queue.length !== 0)
+          str = "*Current Queue:*\n" + queue.join("\n");
+
+        self.bot.sendMessage(self.channel, str);
+      }
+    );
   };
 };
