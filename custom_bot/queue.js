@@ -1,9 +1,9 @@
 var db = require("./database")();
 
 module.exports = function(CustomBot){
-
   CustomBot.prototype.addToQueue = function(){
     var self = this;
+
     var check_and_insert = function(err, rows){
       if(rows){
         var queue_message =
@@ -21,7 +21,7 @@ module.exports = function(CustomBot){
       "users.info",
       { user: self.message.user },
       function(data) {
-        self.name = data.user.real_name || data.user.name;
+        self.name = data.user.name;
 
         db.get(
           "SELECT name FROM queue WHERE name='" + self.name + "' LIMIT 1",
@@ -48,27 +48,28 @@ module.exports = function(CustomBot){
   };
 
   CustomBot.prototype.next = function(){
-    // @TODO
-    // var currentStudent = queue.shift();
-    //
-    // if(currentStudent){
-    //   this.bot.sendMessage(
-    //     this.channel,
-    //     "Up now: <@" + currentStudent.id + ">! \n " + this.prettyQueue()
-    //   );
-    //
-    //   this.backup(queue);
-    // } else {
-    //   this.bot.sendMessage(
-    //     this.channel,
-    //     this.bot_flavor.empty_queue || "The queue is empty."
-    //   );
-    // }
+    var self = this;
+
+    db.get("SELECT * FROM queue", function(err, row){
+      if(row){
+        self.bot.sendMessage(
+          self.channel,
+          "Up now: <@" + row.name + ">! \n "
+        );
+        db.run("DELETE FROM queue WHERE user_id='" + row.user_id + "'");
+        self.printQueue();
+      } else {
+        self.bot.sendMessage(
+          self.channel,
+          self.bot_flavor.empty_queue || "_The queue is empty._"
+        );
+      }
+    });
   };
 
   CustomBot.prototype.printQueue = function(){
     var str =
-      this.bot_flavor.empty_queue || "_Currently empty_",
+      this.bot_flavor.empty_queue || "_Empty_",
       self = this;
 
     db.all(
@@ -79,9 +80,9 @@ module.exports = function(CustomBot){
         });
 
         if(queue.length !== 0)
-          str = "*Current Queue:*\n" + queue.join("\n");
+          str = queue.join("\n");
 
-        self.bot.sendMessage(self.channel, str);
+        self.bot.sendMessage(self.channel, "*Current Queue:*\n" + str);
       }
     );
   };
