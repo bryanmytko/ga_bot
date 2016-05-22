@@ -20,6 +20,8 @@ var CustomBot = require("../custom_bot/custom-bot").CustomBot;
 var Attendance = require("../custom_bot/attendance")(CustomBot);
 
 describe("CustomBot", function(){
+  var send = sinon.stub(slackbot.prototype, "sendMessage");
+
   describe("#greeting()", function(){
     beforeEach(function(){
       sinon.spy(console, "log");
@@ -56,10 +58,7 @@ describe("CustomBot", function(){
   });
 
   describe("#help()", function(){
-
     it("sends the help information message", function(){
-      var send = sinon.stub(slackbot.prototype, "sendMessage");
-
       bot.help();
 
       expect(send.calledOnce).to.be.true;
@@ -103,6 +102,13 @@ describe("CustomBot", function(){
     it("returns a random quote", function(){
       var quote = bot.randomQuote();
       expect(quote).to.be.oneOf(["Hello!", ":D"]);
+    });
+  });
+
+  describe("#respond", function(){
+    it("responds to message: hello", function(){
+      bot.respond("hello");
+      expect(send.calledOnce).to.be.true;
     });
   });
 });
