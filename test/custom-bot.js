@@ -120,5 +120,10 @@ describe("CustomBot", function(){
       bot.respond("status");
       expect(send.calledOnce).to.be.true;
     });
+
+    it("responds to what is my user id", function(){
+      bot.respond("what is my user id");
+      expect(send.calledOnce).to.be.true;
+    });
   });
 });
