@@ -110,5 +110,15 @@ describe("CustomBot", function(){
       bot.respond("hello");
       expect(send.calledOnce).to.be.true;
     });
+
+    it("responds to queue", function(){
+      bot.respond("queue");
+      expect(send.calledOnce).to.be.true;
+    });
+
+    it("responds to status", function(){
+      bot.respond("status");
+      expect(send.calledOnce).to.be.true;
+    });
   });
 });
