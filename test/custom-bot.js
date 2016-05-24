@@ -18,9 +18,14 @@ var CustomBot = require("../custom_bot/custom-bot.js").CustomBot,
 
 var CustomBot = require("../custom_bot/custom-bot").CustomBot;
 var Attendance = require("../custom_bot/attendance")(CustomBot);
+var Queue = require("../custom_bot/queue")(CustomBot);
 
 describe("CustomBot", function(){
-  var send = sinon.stub(slackbot.prototype, "sendMessage");
+  var sendMessage = sinon.stub(slackbot.prototype, "sendMessage");
+
+  afterEach(function(){
+    sendMessage.reset();
+  });
 
   describe("#greeting()", function(){
     beforeEach(function(){
@@ -61,8 +66,8 @@ describe("CustomBot", function(){
     it("sends the help information message", function(){
       bot.help();
 
-      expect(send.calledOnce).to.be.true;
-      expect(send.calledWith(bot.message.channel)).to.be.true;
+      expect(sendMessage.calledOnce).to.be.true;
+      expect(sendMessage.calledWith(bot.message.channel)).to.be.true;
     });
   });
 
@@ -106,24 +111,37 @@ describe("CustomBot", function(){
   });
 
   describe("#respond", function(){
+
     it("responds to message: hello", function(){
-      bot.respond("hello");
-      expect(send.calledOnce).to.be.true;
+      var message = { text: "<@test_bot>: hello" };
+      bot.respond(message);
+      expect(sendMessage.calledOnce).to.be.true;
     });
 
-    it("responds to queue", function(){
-      bot.respond("queue");
-      expect(send.calledOnce).to.be.true;
-    });
+    it("responds to status / queue", function(){
+      var message = { text: "<@test_bot>: queue" };
+      bot.respond(message);
+      var message = { text: "<@test_bot>: status" };
+      bot.respond(message);
 
-    it("responds to status", function(){
-      bot.respond("status");
-      expect(send.calledOnce).to.be.true;
+      expect(sendMessage.calledTwice).to.be.true;
     });
-
-    it("responds to what is my user id", function(){
-      bot.respond("what is my user id");
-      expect(send.calledOnce).to.be.true;
-    });
+    //
+    // it("responds to status", function(){
+    //   bot.respond("status");
+    //   expect(send.calledOnce).to.be.true;
+    // });
+    //
+    // it("responds to what is my user id", function(){
+    //   bot.respond("what is my user id");
+    //   expect(send.calledOnce).to.be.true;
+    // });
+    //
+    // it("responds to queue me", function(){
+    //   var b = new slackbot();
+    //   var called = sinon.stub(b, "sendMessage").returns(0);
+    //   bot.respond("queue me");
+    //   expect(called.calledOnce).to.be.true;
+    // });
   });
 });
