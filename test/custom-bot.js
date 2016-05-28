@@ -130,7 +130,6 @@ describe("CustomBot", function(){
       bot.respond(message);
 
       expect(sendMessage.calledTwice).to.be.true;
-
     });
 
     it("responds to what is my user id", function(){
@@ -140,11 +139,12 @@ describe("CustomBot", function(){
       expect(sendMessage.calledOnce).to.be.true;
     });
 
-    // it("responds to queue me", function(){
-    //   var b = new slackbot();
-    //   var called = sinon.stub(b, "sendMessage").returns(0);
-    //   bot.respond("queue me");
-    //   expect(called.calledOnce).to.be.true;
-    // });
+    it("responds to queue me", function(){
+      var addToQueue = sinon.stub(bot, "addToQueue");
+      var message = { text: "<@test_bot>: queue me" };
+      bot.respond(message);
+
+      expect(addToQueue.calledOnce).to.be.true;
+    });
   });
 });
