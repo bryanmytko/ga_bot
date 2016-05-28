@@ -23,10 +23,6 @@ var Queue = require("../custom_bot/queue")(CustomBot);
 describe("CustomBot", function(){
   var sendMessage = sinon.stub(slackbot.prototype, "sendMessage");
 
-  afterEach(function(){
-    sendMessage.reset();
-  });
-
   describe("#greeting()", function(){
     beforeEach(function(){
       sinon.spy(console, "log");
@@ -63,6 +59,10 @@ describe("CustomBot", function(){
   });
 
   describe("#help()", function(){
+    beforeEach(function(){
+      sendMessage.reset();
+    });
+
     it("sends the help information message", function(){
       bot.help();
 
@@ -106,15 +106,20 @@ describe("CustomBot", function(){
   describe("#randomQuote", function(){
     it("returns a random quote", function(){
       var quote = bot.randomQuote();
+
       expect(quote).to.be.oneOf(["Hello!", ":D"]);
     });
   });
 
   describe("#respond", function(){
+    beforeEach(function(){
+      sendMessage.reset();
+    });
 
     it("responds to message: hello", function(){
       var message = { text: "<@test_bot>: hello" };
       bot.respond(message);
+
       expect(sendMessage.calledOnce).to.be.true;
     });
 
@@ -125,18 +130,16 @@ describe("CustomBot", function(){
       bot.respond(message);
 
       expect(sendMessage.calledTwice).to.be.true;
+
     });
-    //
-    // it("responds to status", function(){
-    //   bot.respond("status");
-    //   expect(send.calledOnce).to.be.true;
-    // });
-    //
-    // it("responds to what is my user id", function(){
-    //   bot.respond("what is my user id");
-    //   expect(send.calledOnce).to.be.true;
-    // });
-    //
+
+    it("responds to what is my user id", function(){
+      var message = { text: "<@test_bot>: what is my user id?" };
+      bot.respond(message);
+
+      expect(sendMessage.calledOnce).to.be.true;
+    });
+
     // it("responds to queue me", function(){
     //   var b = new slackbot();
     //   var called = sinon.stub(b, "sendMessage").returns(0);
