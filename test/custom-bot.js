@@ -13,8 +13,11 @@ var slackbot = require('../slackbot-new'),
 
     chai.use(sinonChai);
 
+var admin_id = 1;
+var ta_id = 2;
+
 var CustomBot = require("../custom_bot/custom-bot.js").CustomBot,
-    bot = new CustomBot(bot, 1, 2, bot_flavor);
+    bot = new CustomBot(bot, admin_id, ta_id, bot_flavor);
 
 var CustomBot = require("../custom_bot/custom-bot").CustomBot;
 var Attendance = require("../custom_bot/attendance")(CustomBot);
@@ -145,6 +148,14 @@ describe("CustomBot", function(){
       bot.respond(message);
 
       expect(addToQueue.calledOnce).to.be.true;
+    });
+
+    it("responds to set secret", function(){
+      var setSecret = sinon.stub(bot, "setSecret");
+      var message = { user: admin_id, text: "<@test_bot>: set secret foo" };
+      bot.respond(message);
+
+      expect(setSecret.calledOnce).to.be.true;
     });
   });
 });
