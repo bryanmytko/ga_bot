@@ -1,0 +1,36 @@
+{
+  "name": "ga-bot",
+  "version": "0.0.1",
+  "description": "A slackbot for queueing students for help during TA hours, using the [slackbot NPM](https://github.com/rmcdaniel/node-slackbot) by [Richard McDaniel](https://github.com/rmcdaniel)",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node app.js"
+  },
+  "author": "Max Peterson / Bobby King / Bryan Mytko",
+  "license": "ISC",
+  "dependencies": {
+    "async": "^1.4.2",
+    "express": "^4.13.3",
+    "https": "^1.0.0",
+    "node-slackbot": "0.0.6",
+    "nodemon": "^1.8.1",
+    "querystring": "^0.2.0",
+    "request": "^2.60.0",
+    "sqlite3": "^3.1.3",
+    "ws": "^0.7.2",
+    "xml2js": "^0.4.12"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bryanmytko/ga-bot.git"
+  },
+  "bugs": {
+    "url": "https://github.com/bryanmytko/ga-bot"
+  },
+  "homepage": "https:bryanmytko/ga-bot#readme",
+  "devDependencies": {
+    "mocha": "^2.3.4",
+    "mocha-sinon": "^1.1.4"
+  }
+}
