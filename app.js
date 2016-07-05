@@ -6,7 +6,7 @@ var envVars = require('./env-vars');
 var xmlParser = new xml2js.Parser();
 
 var sqlite3 = require('sqlite3').verbose();
-var db = new sqlite3.Database('db/ga_bot.sqlite3');
+var db = new sqlite3.Database('./db/ga_bot.sqlite3');
 
 var botKey = envVars['SLACKBOT_KEY'];
 var taID = envVars['TA_ID'];
