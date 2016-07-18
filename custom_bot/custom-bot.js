@@ -2,10 +2,11 @@ var db = require("./database")();
 
 function CustomBot(bot, ta_id, admin_id, bot_flavor){
   this.bot = bot;
-  this.ta_id = ta_id;
-  this.admin_id = admin_id;
   this.bot_flavor = bot_flavor;
   this.getSecret();
+
+  this.ta_id = ta_id.split(",");
+  this.admin_id = admin_id.split(",");
 
   return this;
 }
@@ -65,9 +66,10 @@ CustomBot.prototype.randomQuote = function(){
 CustomBot.prototype.getAccessLevel = function(){
   var access_level = 0;
 
-  if(this.user === this.admin_id){
+  if(this.admin_id.indexOf(this.user) != -1){
     access_level = 3;
-  } else if(this.user === this.ta_id){
+
+  } else if(this.ta_id.indexOf(this.user) != -1){
     access_level = 2;
   }
 

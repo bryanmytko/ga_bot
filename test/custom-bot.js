@@ -13,8 +13,8 @@ var slackbot = require('../slackbot-new'),
 
     chai.use(sinonChai);
 
-var admin_id = 1;
-var ta_id = 2;
+var admin_id = '1,2';
+var ta_id = '3,4,5';
 
 var CustomBot = require("../custom_bot/custom-bot.js").CustomBot,
     bot = new CustomBot(bot, admin_id, ta_id, bot_flavor);
@@ -76,8 +76,8 @@ describe("CustomBot", function(){
 
   describe("#getAccessLevel()", function(){
     beforeEach(function(){
-      bot.admin_id = 1;
-      bot.ta_id = 2;
+      bot.admin_id = '1,2';
+      bot.ta_id = '3,4,5';
 
       var admin_access_level = 3;
       var ta_access_level = 2;
@@ -85,14 +85,22 @@ describe("CustomBot", function(){
     });
 
     it("returns the correct access level for an admin", function(){
-      bot.user = bot.admin_id;
+      bot.user = '1';
       var access_level = bot.getAccessLevel();
 
       expect(access_level).to.eq(3);
     });
 
     it("returns the correct access level for a TA", function(){
-      bot.user = bot.ta_id;
+      bot.user = '3';
+      var access_level = bot.getAccessLevel();
+
+      expect(access_level).to.eq(2);
+    });
+
+    it("returns the correct access level with singular TA", function(){
+      bot.ta_id = '3';
+      bot.user = '3';
       var access_level = bot.getAccessLevel();
 
       expect(access_level).to.eq(2);
