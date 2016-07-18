@@ -1,5 +1,5 @@
 module.exports = {
-  'SLACKBOT_KEY':'xoxb-42487693265-iFuG3wBdLd44n1XPnSdzYi5n',
+  'SLACKBOT_KEY':'xoxb-60322940372-bD73rMq5QYu9zK8n4jJX1cmx',
   'TA_ID':'U0FR7LC0M',
   'ADMIN_ID':'U0FR7LC0M,U0ENX2LE6'
 };
