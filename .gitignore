@@ -8,3 +8,5 @@ env-vars.js
 /db
 
 *.sqlite3
+
+/node_modules
