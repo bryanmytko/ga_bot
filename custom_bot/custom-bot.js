@@ -96,8 +96,7 @@ CustomBot.prototype.respond = function(message){
     case "what is my user id?":
       this.bot.sendMessage(this.channel, "Your id is: " + this.user);
       break;
-    case "q me":
-    case "queue me":
+    case (text.match(/(q|queue)\s/) || {}).input:
       this.addToQueue();
       break;
     case "remove":
