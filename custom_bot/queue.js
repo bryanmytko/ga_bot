@@ -1,7 +1,7 @@
 var db = require("./database")();
 
 module.exports = function(CustomBot){
-  CustomBot.prototype.addToQueue = function(){
+  CustomBot.prototype.addToQueue = function(details){
     var self = this;
 
     var check_and_insert = function(err, rows){
@@ -11,8 +11,15 @@ module.exports = function(CustomBot){
         self.bot.sendMessage(self.channel, queue_message);
       } else {
         db.run(
-            "INSERT INTO queue (user_id, name) "
-            + "VALUES ('" + self.user + "', '" + self.name + "')");
+            "INSERT INTO queue (user_id, name, details) "
+            + "VALUES ('"
+            + self.user
+            +"', '"
+            + self.name
+            +"', '"
+            + details.trim()
+            +"')"
+        );
         self.printQueue();
       }
     };
