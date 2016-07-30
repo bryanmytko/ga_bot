@@ -1,12 +1,11 @@
-env-vars.js
-
 *.swp
 *.swo
+*.sqlite3
 
 .DS_STORE
 
+/node_modules
 /db
 
-*.sqlite3
-
-/node_modules
+custom_bot/bot-flavor.js
+env-vars.js
