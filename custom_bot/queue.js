@@ -82,8 +82,12 @@ module.exports = function(CustomBot){
     db.all(
       "SELECT * FROM queue",
       function(err, rows){
-        var queue = rows.map(function(row){
-          return "\t• " + row.name;
+        var queue = rows.map(function(row, i){
+          var str = "\t" + (i + 1) + ". *" + row.name + "*";
+          if(row.details)
+            str += " - " + row.details;
+
+          return str;
         });
 
         if(queue.length !== 0)
