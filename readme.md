@@ -21,7 +21,7 @@ This version written & maintained by [Bryan Mytko](https://github.com/bryanmytko
 -------
 # Customization
 
-GA-Bot allows for custom interaction via the `bot_flavor.js` file. You can override the default messages here by adding data for the specific flavor keys:
+GA-Bot allows for custom interaction via the `bot_flavor.js` file. Rename the provided `custom_bot/bot_flavor.sample.js` file. You can override the default messages here by adding data for the specific flavor keys:
 
 - `present` Response when a student sends the attendance secret word.
 - `already_queued` Response when you try to queue again.
@@ -37,7 +37,7 @@ GA-Bot allows for custom interaction via the `bot_flavor.js` file. You can overr
 ### List of commands:
 All commands work by mentioning the bot directly, using the `@` mention system of Slack. For instance, to use the queue command, you would write: `@bot-name q me`
 - `hello` - the bot will greet you back.
-- `queue me` or `q me` - add yourself to the queue for help
+- `queue me [message]` or `q me [message]` - add yourself to the queue for help. Optional `message` parameter lets the TA know what topic you need help with.
 - `remove` or `remove me` - remove yourself from the queue
 - `status` - display the current status of/who is in the queue
 - `what is my user id?` - the bot will give you your Slack internal user id.

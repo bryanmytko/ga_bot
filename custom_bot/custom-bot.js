@@ -8,7 +8,27 @@ function CustomBot(bot, ta_id, admin_id, bot_flavor){
   this.ta_id = ta_id.split(",");
   this.admin_id = admin_id.split(",");
 
+  this.start();
+
   return this;
+}
+
+/* Currently testing if this is horrible :P */
+CustomBot.prototype.start = function(){
+  var self = this;
+  var random_quote = function(){
+    var max = 1000;
+    var rand = Math.floor(Math.random() * (max)) + 1;
+    var rand2 = Math.floor(Math.random() * (max)) + 1;
+    if(rand === rand2){
+      self.bot.sendMessage(
+        self.channel,
+        self.randomQuote()
+      );
+    }
+  }
+
+  setInterval(random_quote, 1000);
 }
 
 CustomBot.prototype.greet = function(){
@@ -83,7 +103,8 @@ CustomBot.prototype.respond = function(message){
   this.full_name = `<@${this.user}>`;
   this.access_level = this.getAccessLevel();
 
-  text = this.parseMessageText();
+  var text = this.parseMessageText(),
+      tmp_result;
 
   switch(text){
     case "hello":
@@ -96,9 +117,8 @@ CustomBot.prototype.respond = function(message){
     case "what is my user id?":
       this.bot.sendMessage(this.channel, "Your id is: " + this.user);
       break;
-    case "q me":
-    case "queue me":
-      this.addToQueue();
+    case (tmp_result = /(q|queue)\sme(.*)/.exec(text) || {}).input:
+      this.addToQueue(tmp_result[2]);
       break;
     case "remove":
     case "remove me":
@@ -123,6 +143,7 @@ CustomBot.prototype.respond = function(message){
       if(this.access_level >= 2) this.clearAttendance();
       break;
     default:
+      /* @TODO Make this like the other regex matches; This is old. */
       if(/set secret\s*.*/.test(text)){
         if(this.access_level >= 3) this.setSecret(text);
       }
