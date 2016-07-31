@@ -12,11 +12,12 @@ This version written & maintained by [Bryan Mytko](https://github.com/bryanmytko
 # Setup
 
 1. Create a bot on Slack [here](https://my.slack.com/services/new/bot) and invite the bot to your channel.
-1. Set the bot's key to an environment variable `SLACKBOT_KEY`
+1. Rename the file `env-vars.sample.js` to `env-vars.js`. Be careful not to add this file to your repository.
+1. Set the bot's key to an environment variable `SLACKBOT_KEY` in your env-vars.js file.
 1. Set up the datbase by running `node db/migrations.js`
 1. Run `npm start` to start the bot. Alternatively, ga_bot implements [forever](https://www.npmjs.com/package/forever) which can be executed with `forever start app.js`.
 1. Communicate with the bot by typing commands directly to the bot via mention or private message in Slack.
-1. There are permission levels for certain commands. These can be set with environment variables `TA_ID` and `ADMIN_ID`
+1. There are permission levels for certain commands. These can be set with environment variables in the `env-vars.js` file for `TA_ID` and `ADMIN_ID`. If you don't know these values, see the command belong to obtain your user id.
 
 -------
 # Customization
