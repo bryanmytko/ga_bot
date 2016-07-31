@@ -17,7 +17,7 @@ function CustomBot(bot, ta_id, admin_id, bot_flavor){
 CustomBot.prototype.start = function(){
   var self = this;
   var random_quote = function(){
-    var max = 1000;
+    var max = 10000;
     var rand = Math.floor(Math.random() * (max)) + 1;
     var rand2 = Math.floor(Math.random() * (max)) + 1;
     if(rand === rand2){
