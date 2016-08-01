@@ -46,9 +46,11 @@ CustomBot.prototype.parseMessageText = function(){
 CustomBot.prototype.help = function(){
   this.bot.sendMessage(
     this.message.channel,
-    "All commands work only when you specifically mention me. " +
-    "Type `queue me` or `q me` to queue yourself and `status` to check " +
-    "current queue. Type `remove me` to remove yourself."
+    "All commands work only when you specifically mention me, or send me a private message. " +
+    "Type `queue me` or `q me` to queue yourself. You can pass an additional parameter to let the TA know what topic you want to discuss like: `queue me Javascript is hard`." +
+    "Use `status` to check the current queue." +
+    "Type `remove me` to remove yourself." +
+    "For a more thorough list of commands see the documentation: http://bit.ly/2atTknS"
   );
 };
 
@@ -122,7 +124,11 @@ CustomBot.prototype.respond = function(message){
       break;
     case "remove":
     case "remove me":
-      this.removeMe();
+      this.remove("self");
+      break;
+      case (tmp_result = /remove\s.*(\d*)/.exec(text) || {}).input:
+      console.log(tmp_result);
+      this.remove(tmp_result[1]);
       break;
     case "help":
       this.help();
