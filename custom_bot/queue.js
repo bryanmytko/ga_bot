@@ -41,7 +41,9 @@ module.exports = function(CustomBot){
   CustomBot.prototype.remove = function(users){
     if(users){
       var names_to_remove = users.replace(/ /g, ",");
-      var query = "DELETE FROM queue WHERE name IN ('" + names_to_remove + "')";
+      var names = names_to_remove.split(',').map(function(s){ return '"' + s + '"' }).join(',')
+
+      var query = "DELETE FROM queue WHERE name IN (" + names + ")";
     } else {
       var query = "DELETE FROM queue WHERE user_id='" + this.user + "'";
     }
