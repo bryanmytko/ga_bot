@@ -38,14 +38,22 @@ module.exports = function(CustomBot){
     )
   };
 
-  CustomBot.prototype.removeMe = function(){
-    var user_id = this.user;
-    db.run("DELETE FROM queue WHERE user_id='" + user_id + "'");
+  CustomBot.prototype.remove = function(users){
+    if(users){
+      var names_to_remove = users.replace(/ /g, ",");
+      var query = "DELETE FROM queue WHERE name IN ('" + names_to_remove + "')";
+    } else {
+      var query = "DELETE FROM queue WHERE user_id='" + this.user + "'";
+    }
+
+    db.run(query);
+
     this.bot.sendMessage(
       this.channel,
       this.bot_flavor.remove || ":wave:"
     );
-    this.printQueue()
+
+    this.printQueue();
   };
 
   CustomBot.prototype.clearQueue = function(){
