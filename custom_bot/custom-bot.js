@@ -124,11 +124,10 @@ CustomBot.prototype.respond = function(message){
       break;
     case "remove":
     case "remove me":
-      this.remove("self");
+      this.remove();
       break;
-      case (tmp_result = /remove\s.*(\d*)/.exec(text) || {}).input:
-      console.log(tmp_result);
-      this.remove(tmp_result[1]);
+    case (tmp_result = /remove\s+([a-zA-Z, ]*)/.exec(text) || {}).input:
+      if(this.access_level >= 2) this.remove(tmp_result[1]);
       break;
     case "help":
       this.help();
