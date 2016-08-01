@@ -46,7 +46,8 @@ All commands work by mentioning the bot directly, using the `@` mention system o
 - `help` - displays a list of the commands available to anyone who is not the admin/TA
 
 Commands only available for the TA & Admin:
-- `next` - removes the first person from the queue and sends a message to alert them that it is their turn. It also displays the new status of the queue
+- `next` - removes the first person from the queue and sends a message to alert them that it is their turn. It also displays the new status of the queue.
+- `remove [username,[username2...]]` - removes specific, by name, from the queue.
 - `clear queue` - clears the queue.
 - `attendance` - outputs the current attendance list.
 - `clear attendance` - clears the current attendance list.
