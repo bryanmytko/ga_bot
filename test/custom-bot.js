@@ -41,11 +41,11 @@ describe("CustomBot", function(){
     });
   });
 
-  describe("#parseMessageText()", function(){
+  describe("#parse_message_text()", function(){
     describe("when the message is valid", function(){
       it("returns the parsed text", function(){
         bot.message = { text: "<@test_bot>: hello" };
-        var result = bot.parseMessageText();
+        var result = bot.parse_message_text();
 
         expect(result).to.eq("hello");
       });
@@ -54,7 +54,7 @@ describe("CustomBot", function(){
     describe("when the message is invalid", function(){
       it("returns nothing", function(){
         bot.message = { text: "" };
-        var result = bot.parseMessageText();
+        var result = bot.parse_message_text();
 
         expect(result).to.eq("");
       });

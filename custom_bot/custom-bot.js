@@ -36,7 +36,7 @@ CustomBot.prototype.greet = function(){
   console.log(greeting);
 };
 
-CustomBot.prototype.parseMessageText = function(){
+CustomBot.prototype.parse_message_text = function(){
   var text = this.message.text || "";
   text = text.split(/<.*>:?\s*/)[1] || "";
 
@@ -105,7 +105,7 @@ CustomBot.prototype.respond = function(message){
   this.full_name = `<@${this.user}>`;
   this.access_level = this.getAccessLevel();
 
-  var text = this.parseMessageText(),
+  var text = this.parse_message_text(),
       tmp_result;
 
   switch(text){
