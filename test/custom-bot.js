@@ -151,7 +151,7 @@ describe("CustomBot", function(){
     });
 
     it("responds to queue me", function(){
-      var addToQueue = sinon.stub(bot, "addToQueue");
+      var addToQueue = sinon.stub(bot, "add_to_queue");
       var message = { text: "<@test_bot>: queue me" };
       bot.respond(message);
 
