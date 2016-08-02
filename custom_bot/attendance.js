@@ -9,7 +9,6 @@ module.exports = function(CustomBot){
   };
 
   CustomBot.prototype.checkAttendance = function(){
-    var self = this;
     var today = new Date();
 
     db.get(
@@ -19,17 +18,15 @@ module.exports = function(CustomBot){
         + today.setHours(0,0,0,0)
         + "' LIMIT 1",
       function(err, rows){
-        if(!rows) self.insertAttendance();
-      }
+        if(!rows) this.insertAttendance();
+      }.bind(this)
     );
   };
 
   CustomBot.prototype.insertAttendance = function(){
-    var self = this;
-
-    self.bot.api(
+    this.bot.api(
       "users.info",
-      { user: self.message.user },
+      { user: this.message.user },
       function(data) {
         var name = data.user.real_name || data.user.name;
         var today = new Date();
@@ -38,20 +35,17 @@ module.exports = function(CustomBot){
         );
         stmt.run(data.user.name, data.user.id, today.setHours(0,0,0,0));
 
-        self.sendAttendanceMessage(
+        this.sendAttendanceMessage(
            name
              + " "
-             + (self.bot_flavor.present || "You've been marked as present!")
+             + (this.bot_flavor.present || "You've been marked as present!")
         );
-      }
+      }.bind(this)
     );
   };
 
   CustomBot.prototype.printAttendance = function(){
-    var str =
-      this.bot_flavor.attendance_zero || "*No one is here yet.*",
-      today = new Date().setHours(0,0,0,0),
-      self = this;
+    var today = new Date().setHours(0,0,0,0);
 
     db.all(
       "SELECT * FROM attendance WHERE created_at = '" + today + "'",
@@ -61,16 +55,21 @@ module.exports = function(CustomBot){
         });
 
         if(attendance.length !== 0)
-          str = "*Attendance:*\n" + attendance.join("\n");
+          var str = "*Attendance:*\n" + attendance.join("\n");
+        else
+          var str = this.bot_flavor.attendance_zero
 
-        self.bot.sendMessage(self.channel, str);
-      }
+        this.bot.sendMessage(this.channel, str);
+      }.bind(this)
     );
   };
 
   CustomBot.prototype.clearAttendance = function(){
     db.run("DELETE FROM attendance");
-    var response = this.bot_flavor.attendance_cleared || "Attendance cleared";
-    this.bot.sendMessage(this.message.channel, response);
+
+    this.bot.sendMessage(
+      this.message.channel,
+      this.bot_flavor.attendance_cleared
+    )
   };
 };
