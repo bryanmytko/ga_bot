@@ -147,11 +147,9 @@ CustomBot.prototype.respond = function(message){
     case "clear attendance":
       if(this.access_level >= 2) this.clearAttendance();
       break;
+    case (tmp_result = /^set secret\s*.*/.exec(text) || {}).input:
+      if(this.access_level >= 3) this.setSecret(text);
     default:
-      /* @TODO Make this like the other regex matches; This is old. */
-      if(/set secret\s*.*/.test(text)){
-        if(this.access_level >= 3) this.setSecret(text);
-      }
   }
 };
 
