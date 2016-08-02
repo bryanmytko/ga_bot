@@ -28,7 +28,7 @@ module.exports = function(CustomBot){
         [this.user, this.name, this.details.trim()]
       );
 
-      this.printQueue();
+      this.print_queue();
     }
   };
 
@@ -49,7 +49,7 @@ module.exports = function(CustomBot){
       this.bot_flavor.remove
     );
 
-    this.printQueue();
+    this.print_queue();
   };
 
   CustomBot.prototype.clearQueue = function(){
@@ -70,7 +70,7 @@ module.exports = function(CustomBot){
         db.run(
           "DELETE FROM queue WHERE user_id = ?",
           row.user_id,
-          self.printQueue.bind(self)
+          self.print_queue.bind(self)
         );
       } else {
         self.bot.sendMessage(
@@ -81,7 +81,7 @@ module.exports = function(CustomBot){
     });
   };
 
-  CustomBot.prototype.printQueue = function(){
+  CustomBot.prototype.print_queue = function(){
     var str =
       this.bot_flavor.empty_queue,
       self = this;
