@@ -126,7 +126,7 @@ CustomBot.prototype.respond = function(message){
     case "remove me":
       this.remove();
       break;
-    case (tmp_result = /^remove\s+([a-zA-Z, ]*)/.exec(text) || {}).input:
+    case (tmp_result = /^remove\s+([a-zA-Z0-9, ]*)/.exec(text) || {}).input:
       if(this.access_level >= 2) this.remove(tmp_result[1]);
       break;
     case "help":
