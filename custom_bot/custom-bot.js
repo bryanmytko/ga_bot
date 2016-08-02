@@ -120,7 +120,7 @@ CustomBot.prototype.respond = function(message){
       this.bot.sendMessage(this.channel, "Your id is: " + this.user);
       break;
     case (tmp_result = /^(q|queue)\sme(.*)/.exec(text) || {}).input:
-      this.addToQueue(tmp_result[2]);
+      this.add_to_queue(tmp_result[2]);
       break;
     case "remove":
     case "remove me":
