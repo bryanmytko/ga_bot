@@ -59,26 +59,24 @@ module.exports = function(CustomBot){
   };
 
   CustomBot.prototype.next = function(){
-    var self = this;
-
     db.get("SELECT * FROM queue", function(err, row){
       if(row){
-        self.bot.sendMessage(
-          self.channel,
+        this.bot.sendMessage(
+          this.channel,
           "Up now: <@" + row.name + ">! \n "
         );
         db.run(
           "DELETE FROM queue WHERE user_id = ?",
           row.user_id,
-          self.print_queue.bind(self)
+          this.print_queue.bind(this)
         );
       } else {
-        self.bot.sendMessage(
-          self.channel,
-          self.bot_flavor.empty_queue
+        this.bot.sendMessage(
+          this.channel,
+          this.bot_flavor.empty_queue
         );
       }
-    });
+    }.bind(this));
   };
 
   CustomBot.prototype.print_queue = function(){
