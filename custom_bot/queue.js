@@ -80,10 +80,6 @@ module.exports = function(CustomBot){
   };
 
   CustomBot.prototype.print_queue = function(){
-    var str =
-      this.bot_flavor.empty_queue,
-      self = this;
-
     db.all(
       "SELECT * FROM queue",
       function(err, rows){
@@ -97,9 +93,14 @@ module.exports = function(CustomBot){
 
         if(queue.length !== 0)
           str = queue.join("\n");
+        else
+          str = this.bot_flavor.empty_queue;
 
-        self.bot.sendMessage(self.channel, "*Current Queue:*\n" + str);
-      }
+        this.bot.sendMessage(
+          this.channel,
+          "*Current Queue:*\n" + str
+        );
+      }.bind(this)
     );
   };
 };
