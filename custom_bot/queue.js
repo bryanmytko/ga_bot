@@ -40,15 +40,15 @@ module.exports = function(CustomBot){
 
   CustomBot.prototype.remove = function(users){
     if(users){
-      var names_to_remove = users.replace(/ /g, ",");
-      var names = names_to_remove.split(',').map(function(s){ return '"' + s + '"' }).join(',')
-
-      var query = "DELETE FROM queue WHERE name IN (" + names + ")";
+      var names_to_remove = users.replace(/ /g, ",").split(',');
+      var stmt = db.prepare("DELETE FROM queue WHERE name IN (?)");
+      names_to_remove.forEach(function(el){ stmt.run(el) });
     } else {
-      var query = "DELETE FROM queue WHERE user_id='" + this.user + "'";
+      var stmt = db.prepare("DELETE FROM queue WHERE user_id IN (?)");
+      stmt.run(this.user);
     }
 
-    db.run(query);
+    stmt.finalize();
 
     this.bot.sendMessage(
       this.channel,
