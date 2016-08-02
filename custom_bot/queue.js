@@ -1,41 +1,35 @@
 var db = require("./database")();
 
 module.exports = function(CustomBot){
-  CustomBot.prototype.addToQueue = function(details){
-    var self = this;
+  CustomBot.prototype.add_to_queue = function(details){
+    this.details = details;
 
-    var check_and_insert = function(err, rows){
-      if(rows){
-        var queue_message =
-          self.bot_flavor.already_queued || "You're already in queue.";
-        self.bot.sendMessage(self.channel, queue_message);
-      } else {
-        db.run(
-            "INSERT INTO queue (user_id, name, details) "
-            + "VALUES ('"
-            + self.user
-            +"', '"
-            + self.name
-            +"', '"
-            + details.trim()
-            +"')"
-        );
-        self.printQueue();
-      }
-    };
-
-    self.bot.api(
+    this.bot.api(
       "users.info",
-      { user: self.message.user },
+      { user: this.message.user },
       function(data) {
-        self.name = data.user.name;
+        this.name = data.user.name;
 
         db.get(
-          "SELECT name FROM queue WHERE name='" + self.name + "' LIMIT 1",
-          check_and_insert
+          "SELECT name FROM queue WHERE name='" + this.name + "' LIMIT 1",
+          this.check_and_insert.bind(this)
         );
-      }
-    )
+      }.bind(this)
+    );
+  };
+
+  CustomBot.prototype.check_and_insert = function(err, rows){
+    if(rows){
+      var queue_message = this.bot_flavor.already_queued;
+      this.bot.sendMessage(this.channel, queue_message);
+    } else {
+      var stmt = db.run(
+        "INSERT INTO queue (user_id, name, details) VALUES (?, ?, ?)",
+        [this.user, this.name, this.details.trim()]
+      );
+
+      this.printQueue();
+    }
   };
 
   CustomBot.prototype.remove = function(users){
@@ -52,7 +46,7 @@ module.exports = function(CustomBot){
 
     this.bot.sendMessage(
       this.channel,
-      this.bot_flavor.remove || ":wave:"
+      this.bot_flavor.remove
     );
 
     this.printQueue();
@@ -60,7 +54,7 @@ module.exports = function(CustomBot){
 
   CustomBot.prototype.clearQueue = function(){
     db.run("DELETE FROM queue");
-    var response = this.bot_flavor.queue_cleared || "Queue cleared";
+    var response = this.bot_flavor.queue_cleared;
     this.bot.sendMessage(this.message.channel, response);
   };
 
@@ -73,12 +67,15 @@ module.exports = function(CustomBot){
           self.channel,
           "Up now: <@" + row.name + ">! \n "
         );
-        db.run("DELETE FROM queue WHERE user_id='" + row.user_id + "'");
-        self.printQueue();
+        db.run(
+          "DELETE FROM queue WHERE user_id = ?",
+          row.user_id,
+          self.printQueue.bind(self)
+        );
       } else {
         self.bot.sendMessage(
           self.channel,
-          self.bot_flavor.empty_queue || "_The queue is empty._"
+          self.bot_flavor.empty_queue
         );
       }
     });
@@ -86,7 +83,7 @@ module.exports = function(CustomBot){
 
   CustomBot.prototype.printQueue = function(){
     var str =
-      this.bot_flavor.empty_queue || "_Empty_",
+      this.bot_flavor.empty_queue,
       self = this;
 
     db.all(
