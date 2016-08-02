@@ -15,18 +15,17 @@ function CustomBot(bot, ta_id, admin_id, bot_flavor){
 
 /* Currently testing if this is horrible :P */
 CustomBot.prototype.start = function(){
-  var self = this;
   var random_quote = function(){
-    var max = 100000;
+    var max = 100;
     var rand = Math.floor(Math.random() * (max)) + 1;
     var rand2 = Math.floor(Math.random() * (max)) + 1;
     if(rand === rand2){
-      self.bot.sendMessage(
-        self.channel,
-        self.randomQuote()
+      this.bot.sendMessage(
+        this.channel,
+        this.randomQuote()
       );
     }
-  }
+  }.bind(this)
 
   setInterval(random_quote, 1000);
 }
@@ -55,12 +54,10 @@ CustomBot.prototype.help = function(){
 };
 
 CustomBot.prototype.getSecret = function(){
-  var self = this;
-
   db.get("SELECT * FROM secret", function(err, row){
-    if(row) self.secret = row.value;
-    console.log("The current attendance secret is: " + self.secret);
-  });
+    if(row) this.secret = row.value;
+    console.log("The current attendance secret is: " + this.secret);
+  }.bind(this));
 };
 
 CustomBot.prototype.setSecret = function(text){
