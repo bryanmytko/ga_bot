@@ -119,14 +119,14 @@ CustomBot.prototype.respond = function(message){
     case "what is my user id?":
       this.bot.sendMessage(this.channel, "Your id is: " + this.user);
       break;
-    case (tmp_result = /(q|queue)\sme(.*)/.exec(text) || {}).input:
+    case (tmp_result = /^(q|queue)\sme(.*)/.exec(text) || {}).input:
       this.addToQueue(tmp_result[2]);
       break;
     case "remove":
     case "remove me":
       this.remove();
       break;
-    case (tmp_result = /remove\s+([a-zA-Z, ]*)/.exec(text) || {}).input:
+    case (tmp_result = /^remove\s+([a-zA-Z, ]*)/.exec(text) || {}).input:
       if(this.access_level >= 2) this.remove(tmp_result[1]);
       break;
     case "help":
