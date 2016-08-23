@@ -15,24 +15,14 @@ function CustomBot(bot, ta_id, admin_id, bot_flavor){
 
 /* Currently testing if this is horrible :P */
 CustomBot.prototype.start = function(){
-  var random_quote = function(){
-    var max = 100000;
-    var rand = Math.floor(Math.random() * (max)) + 1;
-    var rand2 = Math.floor(Math.random() * (max)) + 1;
-    if(rand === rand2){
-      this.bot.sendMessage(
-        this.channel,
-        this.randomQuote()
-      );
-    }
-  }.bind(this)
-
-  setInterval(random_quote, 1000);
+  this.bot.sendMessage(
+    this.channel,
+    this.bot_flavor.greeting
+  );
 }
 
 CustomBot.prototype.greet = function(){
-  const greeting = this.bot_flavor.greeting || "Hello. Bot is online!";
-  console.log(greeting);
+  console.log(this.bot_flavor.greeting);
 };
 
 CustomBot.prototype.parse_message_text = function(){
