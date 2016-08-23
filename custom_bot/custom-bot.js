@@ -8,17 +8,7 @@ function CustomBot(bot, ta_id, admin_id, bot_flavor){
   this.ta_id = ta_id.split(",");
   this.admin_id = admin_id.split(",");
 
-  this.start();
-
   return this;
-}
-
-/* Currently testing if this is horrible :P */
-CustomBot.prototype.start = function(){
-  this.bot.sendMessage(
-    this.channel,
-    this.bot_flavor.greeting
-  );
 }
 
 CustomBot.prototype.greet = function(){
