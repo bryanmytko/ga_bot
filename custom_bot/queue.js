@@ -8,12 +8,21 @@ module.exports = function(CustomBot){
       "users.info",
       { user: this.message.user },
       function(data) {
-        this.name = data.user.name;
+        if(this.message.subtype === 'message_changed'){
+          let re = new RegExp("^" + this.bot.mention, "g");
+          if(re.test(this.message.message.text)){
+            let msg = "<@" + this.message.message.user + ">";
+            msg += ", I don't respond to edits.";
+            this.bot.sendMessage(this.channel, msg);
+          }
+        } else {
+          this.name = data.user.name;
 
-        db.get(
-          "SELECT name FROM queue WHERE name='" + this.name + "' LIMIT 1",
-          this.check_and_insert.bind(this)
-        );
+          db.get(
+            "SELECT name FROM queue WHERE name='" + this.name + "' LIMIT 1",
+            this.check_and_insert.bind(this)
+          );
+        }
       }.bind(this)
     );
   };
